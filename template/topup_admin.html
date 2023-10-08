@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <title>Top Up Balance</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='topup.css') }}">
+  </head>
+  <body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');">  
+    <header>
+      <div class="header-container">
+        <div class="logo-container">
+          <a href="/lobby">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
+          </a>
+        </div>
+        <div class="balance-container">
+          <p>Balance:</p>
+          <span>${{ '{:,.0f}'.format(balance) }}</span>
+          <a class="logout-btn" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </header>
+    <div class="topup-form">
+      <h1>Top Up Balance</h1>
+      <form action="{{ url_for('topup', username=username) }}" method="post">
+        <label for="helper-username">Username to Top Up:</label>
+        <input type="text" name="helper_username" id="helper-username" required autocomplete="off" required>
+        <label for="amount">Amount:</label>
+        <input type="number" name="amount" id="amount" min="1" required autocomplete="off" required>
+        <br>
+        <input type="submit" value="Top Up">
+      </form>
+    </div>
+    <script>
+        function logout() {
+            // Clear the browsing history
+            window.location.replace('/logout');
+        }
+    </script>
+  </body>
+</html>

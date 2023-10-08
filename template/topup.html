@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Top Up Balance</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='topup.css') }}">
+  </head>
+  <body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');">
+    <header>
+      <div class="header-container">
+        <div class="logo-container">
+          <a href="/lobby">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
+          </a>
+        </div>
+        <nav class="balance-container">
+          <p>Balance:</p>
+          <span>${{ '{:,.0f}'.format(balance) }}</span>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </nav>
+      </div>
+    </header>
+    <div class="topup-form">
+      <h1>Top Up Balance</h1>
+      <form action="{{ url_for('topup', username=username) }}" method="post">
+        <label for="amount">Amount:</label>
+        <input type="number" name="amount" id="amount" min="1" required autocomplete="off" required>
+        {% if is_admin %}
+          <label for="helper_username">Username to Top Up:</label>
+          <input type="text" name="helper_username" id="helper_username" required>
+        {% endif %}
+        <br>
+        <input type="submit" value="Top Up">
+      </form>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="flash-messages">
+            {% for message in messages %}
+              <div class="flash-message-{{ message[1] }}">{{ message[0] }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+    </div>
+    <script>
+      function logout() {
+        // Clear the browsing history
+        window.location.replace('/logout');
+      }
+    </script>
+  </body>
+</html>

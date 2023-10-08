@@ -1,0 +1,198 @@
+/* Header */
+header {
+  background-color: #292d3e;
+  padding: 1rem;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f9f9f9;
+  background-size: cover; 
+  background-position: center; 
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo-container img {
+  height: 3rem;
+}
+
+.logo-container h1 {
+  font-size: 2rem;
+  color: #FFFFFF;
+  margin-left: 0.5rem;
+}
+
+.balance-container {
+  display: flex;
+  align-items: center;
+}
+
+.balance-container p {
+  font-size: 1.2rem;
+  color: #FFFFFF;
+  margin-right: 1rem;
+}
+
+.balance-container span {
+  font-size: 2rem;
+  color: #28A745;
+  margin-right: 2rem;
+}
+
+.lobby-btn,
+.logout-btn {
+  background-color: transparent;
+  color: #FFFFFF;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  margin-right: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.logout-btn {
+  background-color: var(--red);
+}
+
+.logout-btn:hover,
+.lobby-btn:hover {
+  background-color: #1C1C1E;
+}
+
+/* Slot Machine */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #FFFFFF;
+  border-radius: 5px;
+  margin-top: 2rem;
+  box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1,
+h2 {
+  margin-bottom: 1rem;
+}
+
+form {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+form label {
+  font-size: 1.2rem;
+  margin-right: 1rem;
+}
+
+form input[type='number'] {
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: 1px solid black;
+  width: 100%;
+  max-width: 200px;
+}
+
+button {
+  background-color: #30c651;
+  color: #FFFF;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  margin-left: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+button:hover {
+  background-color: #218838;
+}
+
+.flash-message {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  font-size: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.success {
+  background-color: var(--green);
+  color: #FFFFFF;
+}
+
+.warning {
+  background-color: var(--yellow);
+  color: #000000;
+}
+
+.alert {
+  background-color: var(--red);
+  color: #FFFFFF;
+}
+
+.alert a {
+  color: #FFFFFF;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* Slot Machine Animation */
+.slot-machine {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+  font-size: 4rem;
+}
+
+.slot {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 1rem;
+  width: 4rem;
+  height: 4rem; /* Adjust the height to your desired size */
+  border: 1px solid #000000;
+  border-radius: 5px;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  animation: spin-reel 2s infinite linear;
+}
+
+.slot .symbol img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform-style: preserve-3d;
+}
+
+@keyframes spin-reel {
+  0% {
+    transform: translateZ(0) rotateX(0);
+  }
+  100% {
+    transform: translateZ(-800px) rotateX(360deg);
+  }
+}
+
+/* Responsive Layout */
+@media only screen and (max-width: 600px) {
+  /* Add responsive CSS rules here if needed */
+}

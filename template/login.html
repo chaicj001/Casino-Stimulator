@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Diamond's Member Login  | Diamond Casino</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='login.css') }}">
+    <script>
+      // Hide the error message modal by default
+      window.addEventListener('DOMContentLoaded', () => {
+        const modal = document.querySelector('.modal');
+        modal.classList.add('hidden');
+      });
+
+      // Show the error message modal with the given text and hide it after 5 seconds
+      function showErrorModal(message) {
+        const modal = document.querySelector('.modal');
+        const modalText = document.querySelector('.modal-text');
+        modalText.textContent = message;
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+          modal.classList.add('hidden');
+        }, 5000);
+      }
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Login</h1>
+      <form method="POST" action="{{ url_for('login') }}">
+        <label for="username">Username:</label>
+        <input type="text" name="username" id="username" required autocomplete="off">
+        <label for="password">Password:</label>
+        <input type="password" name="password" id="password" required autocomplete="off">
+        <button type="submit">Login</button>
+        {% if error %}
+          <div class="alert-login">
+            <br/>
+            {{ error }}
+          </div>
+        {% endif %}
+      </form>
+    </div>
+  </body>
+</html>

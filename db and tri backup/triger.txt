@@ -1,0 +1,29 @@
+CREATE TRIGGER `slotmachineid_tri` BEFORE INSERT ON `slot_machine_history`
+ FOR EACH ROW BEGIN
+    DECLARE next_id VARCHAR(10);
+    SELECT CONCAT('SM-', LPAD((SUBSTRING(MAX(slot_machine_id), 4) + 1), 3, '0')) INTO next_id FROM slot_machine_history;
+    IF next_id IS NULL THEN
+        SET next_id = 'SM-001';
+    END IF;
+    SET NEW.sm_id = next_id;
+END
+
+CREATE TRIGGER `topupid_tri` BEFORE INSERT ON `topup_history`
+ FOR EACH ROW BEGIN
+    DECLARE next_id VARCHAR(10);
+    SELECT CONCAT('TP-', LPAD((SUBSTRING(MAX(topup_id), 4) + 1), 3, '0')) INTO next_id FROM topup_history;
+    IF next_id IS NULL THEN
+        SET next_id = 'TP-001';
+    END IF;
+    SET NEW.topup_id = next_id;
+END
+
+CREATE TRIGGER `winlossid_tri` BEFORE INSERT ON `winloss_history`
+ FOR EACH ROW BEGIN
+    DECLARE next_id VARCHAR(10);
+    SELECT CONCAT('WL-', LPAD((SUBSTRING(MAX(winloss_id), 4) + 1), 3, '0')) INTO next_id FROM winloss_history;
+    IF next_id IS NULL THEN
+        SET next_id = 'WL-001';
+    END IF;
+    SET NEW.winloss_id = next_id;
+END

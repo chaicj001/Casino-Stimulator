@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <title>Casino Win/Loss</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='winloss.css') }}">
+  </head>
+  <body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');">
+  <body>
+    <header>
+      <div class="header-container">
+        <div class="logo-container">
+          <a href="/lobby">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
+          </a>
+        </div>
+        <div class="balance-container">
+          <p>Balance:</p>
+          <span>${{ '{:,.0f}'.format(balance) }}</span>
+          <a class="logout-btn" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <h1>Win/Loss</h1>
+      <form method="post">
+        <label for="bet_amount">Bet Amount:</label>
+        <input type="number" name="bet_amount" id="bet_amount" min="1" step="1" required>
+        <div class="buttons">
+          <button type="submit" name="submit" value="win" class="win-btn">Win</button>
+          <button type="submit" name="submit" value="loss" class="loss-btn">Loss</button>
+        </div>
+      </form>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="alert-container">
+            {% for message in messages %}
+              <div class="flash-message {{ message[0] }}">
+                {{ message[1] }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+    </div>
+    <script>
+      function logout() {
+        // Clear the browsing history
+        window.location.replace('/logout');
+      }
+    </script>
+  </body>
+</html>

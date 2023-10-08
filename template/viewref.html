@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <title>Lobby</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='ref.css') }}">
+  </head>
+  <body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');"> 
+    <header>
+      <div class="header-container">
+        <div class="logo-container">
+          <a href="/lobby">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
+          </a>
+        </div>
+        <nav class="balance-container">
+          <p>Balance:</p>
+          <span>${{ '{:,.0f}'.format(balance) }}</span>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </nav>
+      </div>
+    </header>
+
+<body>
+    <h1>Referral Page</h1>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+    <table>
+        <tr>
+            <th>Referral Code</th>
+            <th>Balance Type</th>
+            <th>Privilege</th>
+            <th>Created By</th>
+            <th>Actions</th>
+        </tr>
+        {% for referral in referrals %}
+        <tr>
+            <td>{{ referral[0] }}</td>
+            <td>{{ referral[1] }}</td>
+            <td>{{ referral[2] }}</td>
+            <td>{{ referral[3] }}</td>
+            <td>
+                <form action="{{ url_for('delete_referral', referral_id=referral[0]) }}" method="POST">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <form action="{{ url_for('delete_all_referrals') }}" method="POST">
+        <button type="submit">Delete All Referrals</button>
+    </form>
+</body>
+</html>

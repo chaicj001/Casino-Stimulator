@@ -1,0 +1,41 @@
+{% extends "slotmachine_base.html" %}
+
+{% block content %}
+<link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+<title>Slot Machine Results</title>
+
+<p>Your bet amount: ${{ '{:,.2f}'.format(bet_amount) }}</p>
+<p>Your winnings: ${{ '{:,.2f}'.format(winnings) }}</p>
+<p>Your new balance: ${{ '{:,.2f}'.format(balance) }}</p>
+
+<div class="slot-machine">
+  <div class="slot">
+    <div class="symbol"><img src="{{ url_for('static', filename='slot/' + symbols[0] + '.jpg') }}" alt="{{ symbols[0] }}"></div>
+  </div>
+  <div class="slot">
+    <div class="symbol"><img src="{{ url_for('static', filename='slot/' + symbols[1] + '.jpg') }}" alt="{{ symbols[1] }}"></div>
+  </div>
+  <div class="slot">
+    <div class="symbol"><img src="{{ url_for('static', filename='slot/' + symbols[2] + '.jpg') }}" alt="{{ symbols[2] }}"></div>
+  </div>
+</div>
+
+  <div class="result">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div>
+            {% for message in messages %}
+              <div class="result">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+  </div>
+  <a href="/slotmachine">
+    <button>Play Again</button>
+  </a>
+{% endblock %}
+
+

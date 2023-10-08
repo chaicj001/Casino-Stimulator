@@ -1,0 +1,25 @@
+{% extends "slotmachine_base.html" %}
+
+{% block content %}
+<h2>Welcome, {{ username }}!</h2>
+
+<p>Your current balance is ${{ '{:,.2f}'.format(balance) }}.</p>
+
+<div class="slot-machine">
+  <div class="slot">
+    <div class="symbol"><img src="{{ url_for('static', filename='slot/' + 'dragon.jpg') }}" alt="{{ symbols[0] }}"></div>
+  </div>
+  <div class="slot">
+    <div class="symbol"><img src="{{ url_for('static', filename='slot/' + 'dragon.jpg') }}" alt="{{ symbols[1] }}"></div>
+  </div>
+  <div class="slot">
+    <div class="symbol"><img src="{{ url_for('static', filename='slot/' + 'dragon.jpg') }}" alt="{{ symbols[2] }}"></div>
+  </div>
+</div>
+
+<form method="POST" action="{{ url_for('spin') }}">
+  <label for="bet_amount">Bet amount:</label>
+  <input type="number" name="bet_amount" min="1" max="{{ '{:,.2f}'.format(balance) }}" required>
+  <button type="submit">Spin</button>
+</form>
+{% endblock %}

@@ -1,0 +1,149 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f9f9f9;
+  background-size: cover; 
+  background-position: center; 
+}
+
+header {
+  background-color: #333333;
+  padding: 1rem;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo-container img {
+  height: 3rem;
+}
+
+.logo-container h1 {
+  font-size: 2rem;
+  color: #FFFFFF;
+  margin-left: 0.5rem;
+}
+
+.balance-container {
+  display: flex;
+  align-items: center;
+}
+
+.balance-container p {
+  font-size: 1.2rem;
+  color: #FFFFFF;
+  margin-right: 1rem;
+}
+
+.balance-container span {
+  font-size: 2rem;
+  color: #28A745;
+  margin-right: 2rem;
+}
+
+.lobby-btn,
+.logout-btn {
+  background-color: transparent;
+  color: #FFFFFF;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  margin-right: 1rem;
+}
+
+.lobby-btn:hover,
+.logout-btn:hover {
+  background-color: #1C1C1E;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #FFFFFF;
+  border-radius: 5px;
+  margin-top: 2rem;
+  box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1,
+h2 {
+  margin-bottom: 1rem;
+}
+
+form {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+form label {
+  font-size: 1.2rem;
+  margin-right: 1rem;
+}
+
+form input[type='number'] {
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: none;
+  width: 100%;
+  max-width: 200px;
+}
+
+form button {
+  background-color: #28A745;
+  color: #FFFFFF;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  margin-left: 1rem;
+  cursor: pointer;
+}
+
+form button:hover {
+  background-color: #218838;
+}
+
+.flash-message {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  font-size: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flash-message.success {
+  background-color: #28A745;
+  color: #FFFFFF;
+}
+
+.flash-message.warning {
+  background-color: #FFC107;
+  color: #000000;
+}
+
+.flash-message.error {
+  background-color: #DC3545;
+  color: #FFFFFF;
+}
+
+.flash-message a {
+  color: #FFFFFF;
+  font-weight: bold;
+}

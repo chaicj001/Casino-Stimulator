@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Blackjack</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="stylesheet" type="text/css" href="static/blackjack.css">
+  </head>
+  <body>
+    <header>
+      <div class="header-container">
+        <div class="logo-container">
+          <a href="/lobby">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
+          </a>
+        </div>
+        <div class="balance-container">
+          <p>Balance:</p>
+          <span>${{ '{:,.0f}'.format(balance) }}</span>
+          <a class="logout-btn" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </header>    <div class="container">
+      <h2>Dealer</h2>
+      <div class="cards" id="dealer-hand">
+      </div>
+      <div id="dealer-score"></div>
+      <h2>Player</h2>
+      <div class="cards" id="player-hand">
+      </div>
+      <div id="player-score"></div>
+      <div id="outcome"></div>
+      <button id="play-btn">Play</button>
+    </div>
+    <script src="static/blackjack.js"></script>
+  </body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <title>Referal Code Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='ref.css') }}">
+</head>
+<body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');">
+    <header>
+        <div class="header-container">
+            <div class="logo-container">
+                <a href="/lobby">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
+                </a>
+            </div>
+            <nav class="balance-container">
+                <p>Balance:</p>
+                <span>${{ '{:,.0f}'.format(balance) }}</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="form-container">
+        <form action="/referal" method="POST">
+            <h1>Generate Referral Code</h1>
+            <label for="balance-type">Select Balance Type:</label>
+            <select name="balance-type" id="balance-type">
+                <option value="low">Small Balance</option>
+                <option value="mid">Mid Balance</option>
+                <option value="high">High Balance</option>
+                <option value="vip">VIP Balance</option>
+                <option value="vvip">VVIP Balance</option>
+                <option value="banker">Banker Balance</option>
+            </select>
+            <br><br>
+            <div class="button-container">
+                <input type="submit" name="generate_single" value="Generate Single">
+                <input type="submit" name="generate_multiple" value="Generate Multiple (5)">
+                <input type="submit" name="generate_multiple" value="Generate Multiple (10)">
+            </div>
+        </form>
+    </div>
+</body>
+</html>
