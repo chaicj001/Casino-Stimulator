@@ -22,7 +22,7 @@ XAMPP or other localhost program
 
 #Contributor
 
-Fuilly contribute by myself and asist by Chatgpt 
+Fuilly contribute by myself and asist by ChatGPT 
 
 
  
