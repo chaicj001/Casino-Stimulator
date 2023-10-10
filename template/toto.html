@@ -1,14 +1,33 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Toto Game</title>
-</head>
-<body>
-    <h1>Welcome to Toto Game</h1>
-    <form method="POST" action="/">
+  <head>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <title>4D Toto</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='lobby.css') }}">
+  </head>
+  <body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');"> 
+    <header>
+      <div class="header-container">
+        <div class="logo-container">
+          <a href="/lobby">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
+          </a>
+        </div>
+        <nav class="balance-container">
+          <p>Balance:</p>
+          <span>${{ '{:,.0f}'.format(balance) }}</span>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </nav>
+      </div>
+    </header>
+    <main class="container">
+      <h1>Welcome to 4D Toto</h1>
+      <form method="POST" action="/submit4dtoto">
+        <input type="hidden" name="username" value="{{ username }}">
         <label for="input">Enter a four-digit number:</label>
-        <input type="text" id="input" name="input" minlength="4" maxlength="4" required>
+        <input type="text" id="input" name="4dtoto_number" minlength="4" maxlength="4" required>
         <input type="submit" value="Submit">
-    </form>
-</body>
+      </form>
+    </main>
+  </body>
 </html>

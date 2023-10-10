@@ -333,24 +333,47 @@ def delete_all_referrals():
     flash('All referrals deleted successfully', 'success')
     return redirect(url_for('view_referrals'))
 
-@app.route('/toto', methods=['POST'])
+@app.route('/toto')
 def toto():
     username = session.get('username')
     cursor = mydb.cursor()
     cursor.execute('SELECT balance FROM user WHERE username = %s', (username,))
     balance = float(cursor.fetchone()[0])
-    return redirect(url_for('toto'))
-   # return render_template('toto.html', background_image=session.get('background_image'), balance=balance)
+    return render_template('toto.html',background_image=session.get('background_image'), balance=session.get('balance'))
+
+@app.route('/admin4dtoto')
+def admin4dtoto():
+    username = session.get('username')
+    cursor = mydb.cursor()
+    cursor.execute('SELECT balance FROM user WHERE username = %s', (username,))
+    balance = float(cursor.fetchone()[0])
+    return render_template('admin4dtoto.html',background_image=session.get('background_image'), balance=session.get('balance'))
 
 
+@app.route('/submit4dtoto')
+def submit_4d_toto():
+    username = session.get('username')
+    toto_number = request.form.get('4dtoto_number')
+    cursor = mydb.cursor()
+    cursor.execute('INSERT INTO toto_4d (toto_number, username) VALUES (%s, %s)', (toto_number, username))
+    mydb.commit()
+    cursor.close()
+    return redirect(url_for('lobby'))
 
-
-
-
-
-
-
-
+@app.route('/admin4dtotosubmit')
+def admin4dtotosubmit():
+    username = session.get('username')
+    group1 = request.form.get('group1')
+    group2 = request.form.get('group2')
+    group3 = request.form.get('group3')
+    group4 = request.form.get('group4')
+    group5 = request.form.get('group5')
+    group6 = request.form.get('group6')
+    group7 = request.form.get('group7')
+    cursor = mydb.cursor()
+    cursor.execute('INSERT INTO dtoto_4d (toto_number, username) VALUES (%s, %s)', (toto_number, username))
+    mydb.commit()
+    cursor.close()
 
 
 
