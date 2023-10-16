@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <title>4D TOTO Prize Pool Control</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='lobby.css') }}">
+  </head>
+  <body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }};"> 
+    <header>
+      <div class="header-container">
+        <div class="logo-container">
+          <a href="/lobby">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
+          </a>
+        </div>
+        <nav class="balance-container">
+          <p>Balance:</p>
+          <span>${{ '{:,.0f}'.format(balance) }}</span>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </nav>
+      </div>
+    </header>
+    <main class="container">
+      <h1>Admin 4D TOTO Prize Pool Control</h1>
+      <form method="POST" action="/admin4dsubmit"> <!-- Update the 'action' to your desired route -->
+        <input type="hidden" name="username" value="{{ username }}">
+        
+        <!-- First Prize -->
+        <div class="form-group">
+          <label for="first_prize">First Prize (Big Bet)</label>
+          <input type="text" id="first_prize_big" name="first_prize_big" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="first_prize">First Prize (Small Bet)</label>
+          <input type="text" id="first_prize_small" name="first_prize_small" required>
+        </div>
+
+        <!-- Second Prize -->
+        <div class="form-group">
+          <label for="second_prize">Second Prize (Big Bet)</label>
+          <input type="text" id="second_prize_big" name="second_prize_big" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="second_prize">Second Prize (Small Bet)</label>
+          <input type="text" id="second_prize_small" name="second_prize_small" required>
+        </div>
+
+        <!-- Third Prize -->
+        <div class="form-group">
+          <label for="third_prize">Third Prize (Big Bet)</label>
+          <input type="text" id="third_prize_big" name="third_prize_big" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="third_prize">Third Prize (Small Bet)</label>
+          <input type="text" id="third_prize_small" name="third_prize_small" required>
+        </div>
+
+        <!-- Starter Prize (Big Bet) -->
+        <div class="form-group">
+          <label for="starter_prize">Starter Prize (Big Bet)</label>
+          <input type="text" id="starter_prize_big" name="starter_prize_big" required>
+        </div>
+
+        <!-- Consolation Prize (Big Bet) -->
+        <div class="form-group">
+          <label for="consolation_prize">Consolation Prize (Big Bet)</label>
+          <input type="text" id="consolation_prize_big" name="consolation_prize_big" required>
+        </div>
+        
+        <input type="submit" value="Update Prize Pool"> <!-- Update the label on the submit button -->
+      </form>
+    </main>
+  </body>
+</html>

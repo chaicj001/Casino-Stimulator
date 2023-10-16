@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <title>4D TOTO Rewards Creation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='lobby.css') }}">
+  </head>
+  <body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');"> 
+    <header>
+      <div class="header-container">
+        <div class="logo-container">
+          <a href="/lobby">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
+          </a>
+        </div>
+        <nav class="balance-container">
+          <p>Balance:</p>
+          <span>${{ '{:,.0f}'.format(balance) }}</span>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </nav>
+      </div>
+    </header>
+    <main class="container">
+      <h1>Admin 4D TOTO pool creation</h1>
+      <form method="POST" action="/admintotosubmit">
+        <input type="hidden" name="username" value="{{ username }}">
+        
+        <!-- Group 1 -->
+        <div class="form-group">
+          <label for="group1">Group 1</label>
+          <input type="text" id="group1" name="group1" required>
+        </div>
+
+        <!-- Group 2 -->
+        <div class="form-group">
+          <label for="group2">Group 2</label>
+          <input type="text" id="group2" name="group2" required>
+        </div>
+
+        <!-- Group 3 -->
+        <div class="form-group">
+          <label for="group3">Group 3</label>
+          <input type="text" id="group3" name="group3" required>
+        </div>
+
+        <!-- Group 4 -->
+        <div class="form-group">
+          <label for="group4">Group 4</label>
+          <input type="text" id="group4" name="group4" required>
+        </div>
+
+        <!-- Group 5 -->
+        <div class="form-group">
+          <label for="group5">Group 5</label>
+          <input type="text" id="group5" name="group5" required>
+        </div>
+
+        <!-- Group 6 -->
+        <div class="form-group">
+          <label for="group6">Group 6</label>
+          <input type="text" id="group6" name="group6" required>
+        </div>
+
+        <!-- Group 7 -->
+        <div class="form-group">
+          <label for="group7">Group 7</label>
+          <input type="text" id="group7" name="group7" required>
+        </div>
+
+        <input type="submit" value="Submit">
+      </form>
+    </main>
+  </body>
+</html>

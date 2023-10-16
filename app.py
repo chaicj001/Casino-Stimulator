@@ -8,7 +8,7 @@ import os
 app = Flask(__name__, template_folder='template')
 app.secret_key = 'mysecretkey'
 
-# Database configuration
+# Default Database configuration #casino database
 mydb = mysql.connector.connect(
     host="localhost",
     user="root",
@@ -333,34 +333,45 @@ def delete_all_referrals():
     flash('All referrals deleted successfully', 'success')
     return redirect(url_for('view_referrals'))
 
-@app.route('/toto')
-def toto():
+@app.route('/game4d')
+def game4d():
     username = session.get('username')
     cursor = mydb.cursor()
     cursor.execute('SELECT balance FROM user WHERE username = %s', (username,))
     balance = float(cursor.fetchone()[0])
-    return render_template('toto.html',background_image=session.get('background_image'), balance=session.get('balance'))
+    return render_template('game4d.html',background_image=session.get('background_image'), balance=session.get('balance'))
+    
+'''
+#admin 4d game control page
+@app.route('/admin4dsubmit', methods=['POST'])
+def admin4dsubmit:
+    username = session.get('username')
+    return render_template('game4dadmin.html',background_image=session.get('background_image'), balance=session.get('balance'))
+'''
 
-@app.route('/admin4dtoto')
-def admin4dtoto():
+@app.route('/admintoto')
+def admintoto():
     username = session.get('username')
     cursor = mydb.cursor()
     cursor.execute('SELECT balance FROM user WHERE username = %s', (username,))
     balance = float(cursor.fetchone()[0])
-    return render_template('admin4dtoto.html',background_image=session.get('background_image'), balance=session.get('balance'))
+    return render_template('admintoto.html',background_image=session.get('background_image'), balance=session.get('balance'))
 
-
-@app.route('/submit4dtoto')
-def submit_4d_toto():
+# This is the user to submit the 4d
+@app.route('/submit4dtoto', methods=['POST'])
+def submit_4d():
     username = session.get('username')
-    toto_number = request.form.get('4dtoto_number')
+    toto_number = request.form.get('4d_number')  # Corrected input name
     cursor = mydb.cursor()
     cursor.execute('INSERT INTO toto_4d (toto_number, username) VALUES (%s, %s)', (toto_number, username))
     mydb.commit()
     cursor.close()
     return redirect(url_for('lobby'))
 
-@app.route('/admin4dtotosubmit')
+
+
+#toto game (update require)
+@app.route('/admintotosubmit', methods=['POST'])
 def admin4dtotosubmit():
     username = session.get('username')
     group1 = request.form.get('group1')
@@ -371,10 +382,10 @@ def admin4dtotosubmit():
     group6 = request.form.get('group6')
     group7 = request.form.get('group7')
     cursor = mydb.cursor()
-    cursor.execute('INSERT INTO dtoto_4d (toto_number, username) VALUES (%s, %s)', (toto_number, username))
+    cursor.execute('INSERT INTO toto_4d (toto_number, username) VALUES (%s, %s)', (toto_number, username))
     mydb.commit()
     cursor.close()
-
+    return redirect(url_for('lobby'))
 
 
 
