@@ -3,20 +3,31 @@ import mysql.connector
 import string
 import datetime
 from flask import Flask,flash, render_template, request, redirect, url_for, session, jsonify, abort
+import rsa
 
 rdb = mysql.connector.connect(
     host="localhost",
     user="root",
     password="",
-    database="casino_regis"
-)
+    database="casino_regis")
 
 mydb = mysql.connector.connect(
         host="localhost",
         user="root",
         password="",
-        database="casino"
-    )
+        database="casino")
+
+game4ddb= mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="",
+    database="game4d")
+
+ERROR_IMAGES = [
+    "https://media.giphy.com/media/hLwSzlKN8Fi6I/giphy.gif",
+    "https://media.giphy.com/media/YyKPbc5OOTSQE/giphy.gif",
+    "https://media1.giphy.com/media/TqiwHbFBaZ4ti/giphy.gif"
+]
 
 def create_referal():
     length = 10
@@ -85,12 +96,6 @@ def receivedref(referral, username):
     rdb.commit()
     return new_balance
 
-
-ERROR_IMAGES = [
-    "https://media.giphy.com/media/hLwSzlKN8Fi6I/giphy.gif",
-    "https://media.giphy.com/media/YyKPbc5OOTSQE/giphy.gif",
-    "https://media1.giphy.com/media/TqiwHbFBaZ4ti/giphy.gif"
-]
 
 def errorleh():
 	random_image = random.choice(ERROR_IMAGES)
@@ -264,5 +269,4 @@ def delete_all_referrals():
     cursor = rdb.cursor()
     cursor.execute('DELETE FROM referal')
     rdb.commit()
-
 

@@ -21,11 +21,31 @@
       </div>
     </header>
     <main class="container">
-      <h1>Welcome to 4D Toto</h1>
+      <h1>Welcome to 4D</h1>
       <form method="POST" action="/submit4dtoto">
         <input type="hidden" name="username" value="{{ username }}">
-        <label for="input">Enter a four-digit number:</label>
-        <input type="text" id="input" name="4d_number" minlength="4" maxlength="4" required>
+        
+        <!-- Bet Amount -->
+        <div class="form-group">
+          <label for="4d_bet">Enter Bet Amount:</label>   
+          <input type="text" id="4d_bet" name="4d_bet" minlength="4" maxlength="4" required>
+        </div>
+        
+        <!-- Four-Digit Number -->
+        <div class="form-group">
+          <label for="4d_number">Enter a four-digit number:</label>        
+          <input type="text" id="4d_number" name="4d_number" minlength="4" maxlength="4" required>
+        </div>
+
+        <!-- Bet Type -->
+        <div class="form-group">
+          <label for="bet_type">Select Bet Type:</label>
+          <input type="checkbox" id="small_bet" name="bet_type" value="Small Bet">
+          <label for="small_bet">Small Bet</label>
+          <input type="checkbox" id="big_bet" name="bet_type" value="Big Bet">
+          <label for="big_bet">Big Bet</label>
+        </div>
+        
         <input type="submit" value="Submit">
       </form>
     </main>

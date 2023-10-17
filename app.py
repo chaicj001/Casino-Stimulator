@@ -4,6 +4,8 @@ import datetime
 import random
 from flask_login import LoginManager, login_required, current_user
 import os
+#personal info script (efficient than older one)
+import info
 
 app = Flask(__name__, template_folder='template')
 app.secret_key = 'mysecretkey'
@@ -22,11 +24,8 @@ def index():
     return render_template('login.html')
 
 def checkstatus(username):
-    cursor = mydb.cursor()
-    query = "SELECT status FROM user WHERE username = %s"
-    cursor.execute(query, (username,))
-    user = cursor.fetchone()
-    if user[0]=='active':
+    result= info.get_status(username)
+    if result=='active':
         return True;
     else:
         return render_template('login.html', error='Account has been banned!')
@@ -38,27 +37,24 @@ def login():
 
     # Query the database for the user
     cursor = mydb.cursor()
-    query = "SELECT * FROM user WHERE username = %s"
-    cursor.execute(query, (username,))
-    user = cursor.fetchone()
 
     # Check if the user exists and the password is correct
-    if user is not None and user[1] == password:
+    if info.check_username(username) and info.check_password(username,password)==True:
         # Authentication successful, update last_login and set session
         now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        if user[2] != 'banker' and checkstatus(username)== True:
+        if info.get_priv(username) != 'banker' and checkstatus(username)== True:
             sql = "UPDATE user SET last_login = %s WHERE username = %s"
             val = (now, username)
             cursor.execute(sql, val)
             mydb.commit()
             # Set session
             session['username'] = username
-            session['priv'] = user[2]
+            session['priv'] = info.get_priv(username)
             session['background_image'] = random.choice(['j1.png', 'j2.png', 'j3.png'])
             return redirect(url_for('lobby'))
-        elif user[2] == 'banker' and checkstatus(username)== True:
+        elif info.get_priv(username) == 'banker' and checkstatus(username)== True:
             session['username'] = username
-            session['priv'] = user[2]
+            session['priv'] = info.get_priv(username)
             session['background_image'] = random.choice(['j1.png', 'j2.png', 'j3.png'])
             return redirect(url_for('lobby'))
         else:
@@ -74,14 +70,9 @@ def submit():
     username = request.form.get("username")
     password = request.form.get("password")
     
-    # Query the database for the user
-    cursor = mydb.cursor()
-    query = "SELECT * FROM user WHERE username = %s"
-    cursor.execute(query, (username,))
-    user = cursor.fetchone()
-
+    result= info.check_password(username,password)
     # Check if the user exists and the password is correct
-    if user is not None and user[1] == password:
+    if user is not None and result==True:
         return redirect(url_for("lobby", username=username))
     else:
         return render_template("login.html", error="Invalid username or password")
@@ -90,13 +81,8 @@ def submit():
 def lobby():
     # Get the user's current balance and privileges
     username = session.get('username')
-    cursor = mydb.cursor()
-    cursor.execute('SELECT balance, priv FROM user WHERE username = %s', (username,))
-    result = cursor.fetchone()
-    session['balance'] = float(result[0])
-    priv = result[1] if result else None
-    print(priv)  # Add this line to check the value of priv
-
+    priv=info.get_priv(username)
+    balance=info.get_balance(username)
     # Determine whether to show the Win/Loss button based on user's privileges
     show_winloss = False
     if priv in ['banker', 'admin']:
@@ -105,7 +91,7 @@ def lobby():
     # Randomly choose a background image from j1, j2, j3
     background_image=session.get('background_image')
     # Render the lobby template with the appropriate parameters
-    return render_template('lobby.html', username=username, balance=session['balance'] , priv=priv, show_winloss=show_winloss, background_image=background_image)
+    return render_template('lobby.html', username=username, balance=balance , priv=priv, show_winloss=show_winloss, background_image=background_image)
 
 
 @app.route('/topup', methods=['GET', 'POST'])
@@ -113,11 +99,8 @@ def topup():
     from function import topup_function
     # Get the user's current balance and privileges
     username = session.get('username')
-    cursor = mydb.cursor()
-    cursor.execute('SELECT balance, priv FROM user WHERE username = %s', (username,))
-    result = cursor.fetchone()
-    session['balance']  = float(result[0])
-    priv = result[1]
+    balance= session['balance']  = info.get_balance(username)
+    priv = info.get_priv(username)
     background_image = session.get('background_image')
 
     if request.method == 'POST':
@@ -131,9 +114,9 @@ def topup():
     else:
         # Render the appropriate topup page based on the user's privileges
         if priv == 'admin':
-            return render_template('topup_admin.html', balance=session['balance'] , background_image=background_image)
+            return render_template('topup_admin.html', balance=balance , background_image=background_image)
         else:
-            return render_template('topup.html', balance=session['balance'] , is_admin=False, background_image=background_image)
+            return render_template('topup.html', balance=balance , is_admin=False, background_image=background_image)
 
 @app.route('/logout')
 def logout():
@@ -152,9 +135,7 @@ def logout():
 @app.route('/blackjack')
 def blackjack():
     username = session.get('username')
-    cursor = mydb.cursor()
-    cursor.execute('SELECT balance FROM user WHERE username = %s', (username,))
-    current_balance = float(cursor.fetchone()[0])
+    current_balance = info.get_balance(username)
 
     return render_template('blackjack.html',balance=current_balance)
 
@@ -226,21 +207,17 @@ def winloss():
 def slotmachine():
     # Get the user's current balance and privileges
     username = session.get('username')
-    cursor = mydb.cursor()
-    cursor.execute('SELECT balance, priv FROM user WHERE username = %s', (username,))
-    result = cursor.fetchone()
     # Check if the user exists
-    if result is None:
+
+    current_balance = info.get_balance(username)
+    priv = info.get_priv(username)
+    if current_balance is None or priv is None:
         flash('User not found!', 'danger')
         return redirect(url_for('login'))
-    balance = float(result[0])
-    priv = result[1]
-
     # Initialize symbols to an empty list
     symbols = []
-
     # Render the slot machine template with the appropriate parameters
-    return render_template('slotmachine.html', username=username, balance=balance, symbols=symbols)
+    return render_template('slotmachine.html', username=username, balance=current_balance, symbols=symbols, priv=priv)
 
 @app.route('/spin', methods=['POST'])
 def spin():
@@ -251,10 +228,7 @@ def spin():
     symbols, bet_amount, winnings, session['balance'] = spin_slot_machine(username, bet_amount)
 
     flash(f'{symbols[0]}, {symbols[1]}, {symbols[2]}')
-    cursor = mydb.cursor()
-    cursor.execute('SELECT balance, priv FROM user WHERE username = %s', (username,))
-    result = cursor.fetchone()
-    current_balance = float(result[0])
+    current_balance = info.get_balance(username)
     return render_template('slotmachine_results.html', username=username, symbols=symbols, bet_amount=bet_amount,
                            winnings=winnings, balance=current_balance)
 
@@ -340,22 +314,14 @@ def game4d():
     cursor.execute('SELECT balance FROM user WHERE username = %s', (username,))
     balance = float(cursor.fetchone()[0])
     return render_template('game4d.html',background_image=session.get('background_image'), balance=session.get('balance'))
-    
-'''
-#admin 4d game control page
-@app.route('/admin4dsubmit', methods=['POST'])
-def admin4dsubmit:
-    username = session.get('username')
-    return render_template('game4dadmin.html',background_image=session.get('background_image'), balance=session.get('balance'))
-'''
 
-@app.route('/admintoto')
-def admintoto():
-    username = session.get('username')
-    cursor = mydb.cursor()
-    cursor.execute('SELECT balance FROM user WHERE username = %s', (username,))
-    balance = float(cursor.fetchone()[0])
-    return render_template('admintoto.html',background_image=session.get('background_image'), balance=session.get('balance'))
+
+#admin 4d game control page
+@app.route('/game4dadmin')
+def admin4dsubmit():
+    return render_template('game4dadmin.html',background_image=session.get('background_image'), balance=session.get('balance'))
+
+
 
 # This is the user to submit the 4d
 @app.route('/submit4dtoto', methods=['POST'])
@@ -369,6 +335,13 @@ def submit_4d():
     return redirect(url_for('lobby'))
 
 
+@app.route('/admintoto')
+def admintoto():
+    username = session.get('username')
+    cursor = mydb.cursor()
+    cursor.execute('SELECT balance FROM user WHERE username = %s', (username,))
+    balance = float(cursor.fetchone()[0])
+    return render_template('admintoto.html',background_image=session.get('background_image'), balance=session.get('balance'))
 
 #toto game (update require)
 @app.route('/admintotosubmit', methods=['POST'])

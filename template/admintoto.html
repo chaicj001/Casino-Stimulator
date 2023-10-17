@@ -2,7 +2,7 @@
 <html>
   <head>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <title>4D TOTO Rewards Creation</title>
+    <title>TOTO Rewards Creation</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='lobby.css') }}">
   </head>
   <body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');"> 
@@ -21,7 +21,7 @@
       </div>
     </header>
     <main class="container">
-      <h1>Admin 4D TOTO pool creation</h1>
+      <h1>Admin TOTO pool creation</h1>
       <form method="POST" action="/admintotosubmit">
         <input type="hidden" name="username" value="{{ username }}">
         
