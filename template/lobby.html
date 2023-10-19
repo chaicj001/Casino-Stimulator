@@ -1,62 +1,73 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
     <title>Lobby</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='lobby.css') }}">
-  </head>
-  <body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');"> 
-    <header>
-      <div class="header-container">
-        <div class="logo-container">
-          <a href="/lobby">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
-          </a>
+</head>
+<body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');">     
+  <header>
+        <div class="header-container">
+            <div class="logo-container">
+                <a href="/lobby">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
+                </a>
+            </div>
+            <nav class="balance-container">
+                <p>Balance:</p>
+                <span>${{ '{:,.0f}'.format(balance) }}</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </nav>
         </div>
-        <nav class="balance-container">
-          <p>Balance:</p>
-          <span>${{ '{:,.0f}'.format(balance) }}</span>
-          <button class="logout-btn" onclick="logout()">Logout</button>
-        </nav>
-      </div>
     </header>
     <main class="container">
+        <h1>Welcome to the Casino Lobby, {{ username }}!</h1>
+        <h2>Please select a game:</h2>
+        <ul class="game-list">
+            <li><a href="/blackjack">Blackjack</a></li>
+            <li><a href="/slotmachine">Slot Machines</a></li>
+            <li><a href="#">Roulette (Coming Soon!)</a></li>
+        </ul>
 
-      <h1>Welcome to the Casino Lobby, {{ username }}!</h1>
-      <h2>Please select a game:</h2>
-      <ul class="game-list">
-        <li><a href="/blackjack">Blackjack</a></li>
-        <li><a href="/slotmachine">Slot Machines</a></li>
-        <li><a href="#">Roulette (Coming Soon!)</a></li>
-      </ul>
-      {% if priv == 'admin' or priv == 'banker' %}
+        {% if priv == 'admin' or priv == 'banker' %}
         <h2>Special Privileges:</h2>
         <ul class="privileges-list">
-          <li><a href="/winloss">Win/Loss</a></li>
-          <li><a href="/referal">Referal Code</a></li>
-          <li><a href="/viewref">Referal Code Management</a></li>
-          <li><a href="/referalcollect">Input Referal Code</a></li>
-          <li><a href="/game4d">4D</a></li>
-          <li><a href="/game4dadmin">Admin 4D</a></li>
-          <li><a href="/admintoto">Admin Toto</a></li>
+            <li><a href="/winloss">Win/Loss</a></li>
+            <li><a href="/referal">Referal Code</a></li>
+            <li><a href="/viewref">Referal Code Management</a></li>
+            <li><a href="/referalcollect">Input Referal Code</a></li>
+            <li><a href="/game4d">4D</a></li>
+            <li><a href="/game4dadmin">Admin 4D</a></li>
+            <li><a href="/admintoto">Admin Toto</a></li>
         </ul>
-      {% endif %}
-      <button class="topup-btn" onclick="topup('{{ priv }}')">Top-Up</button>
+        {% endif %}
+
+        <button class="topup-btn" onclick="topup('{{ priv }}')">Top-Up</button>
     </main>
-    <script>
-      function logout() {
-        window.location.replace('/logout');
-      }
-      function topup(priv) {
-        if (priv!='admin' && priv!='banker') {
-          if(confirm("Are you sure you want to top up your account?")) {
-            window.location.replace('/topup');
-          }
-        }
-        else {
-          window.location.replace('/topup');
-        }
-      }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.1/socket.io.js"></script>
+    <script type="text/javascript">
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        // Listen for balance updates
+        socket.on('balance_updated', function(data) {
+            // Update the displayed balance
+            document.getElementById('balance').innerText = data.balance;
+        });
     </script>
-  </body>
+    <script>
+        function logout() {
+            window.location.replace('/logout');
+        }
+
+        function topup(priv) {
+            if (priv != 'admin' && priv != 'banker') {
+                if (confirm("Are you sure you want to top up your account?")) {
+                    window.location.replace('/topup');
+                }
+            } else {
+                window.location.replace('/topup');
+            }
+        }
+    </script>
+</body>
 </html>

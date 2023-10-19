@@ -3,7 +3,6 @@ import mysql.connector
 import string
 import datetime
 from flask import Flask,flash, render_template, request, redirect, url_for, session, jsonify, abort
-import rsa
 
 rdb = mysql.connector.connect(
     host="localhost",

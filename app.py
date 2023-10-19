@@ -7,8 +7,13 @@ import os
 #personal info script (efficient than older one)
 import info
 
+from flask_socketio import SocketIO
+
+
 app = Flask(__name__, template_folder='template')
 app.secret_key = 'mysecretkey'
+socketio = SocketIO(app)
+
 
 # Default Database configuration #casino database
 mydb = mysql.connector.connect(
@@ -77,10 +82,18 @@ def submit():
     else:
         return render_template("login.html", error="Invalid username or password")
 
+@socketio.on('update_balance')
+def handle_update_balance(data):
+    # Handle balance update logic here
+    username = data['username']
+    new_balance = info.get_balance(username)
+    socketio.emit('balance_updated', {'balance': new_balance}, room=username)
+
 @app.route('/lobby')
 def lobby():
     # Get the user's current balance and privileges
     username = session.get('username')
+    socketio.emit('user_join', {'username': username}, room=username)
     priv=info.get_priv(username)
     balance=info.get_balance(username)
     # Determine whether to show the Win/Loss button based on user's privileges
