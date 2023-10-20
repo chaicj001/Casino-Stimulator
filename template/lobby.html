@@ -1,25 +1,26 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <head>
     <title>Lobby</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='lobby.css') }}">
-</head>
-<body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');">     
-  <header>
-        <div class="header-container">
-            <div class="logo-container">
-                <a href="/lobby">
-                    <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
-                </a>
-            </div>
-            <nav class="balance-container">
-                <p>Balance:</p>
-                <span>${{ '{:,.0f}'.format(balance) }}</span>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </nav>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="stylesheet" type="text/css" href="static/lobby.css">
+    
+  </head>
+  <body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');">     
+    <header>
+      <div class="header-container">
+        <div class="logo-container">
+          <a href="/lobby">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
+          </a>
         </div>
-    </header>
+        <div class="balance-container">
+          <p>Balance:</p>
+          <span>${{ '{:,.0f}'.format(balance) }}</span>
+          <a class="logout-btn" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </header>  
     <main class="container">
         <h1>Welcome to the Casino Lobby, {{ username }}!</h1>
         <h2>Please select a game:</h2>
@@ -41,6 +42,15 @@
             <li><a href="/admintoto">Admin Toto</a></li>
         </ul>
         {% endif %}
+
+        {% if priv == 'banker' %}
+        <h2>Banker Privileges:</h2>
+        <ul class="privileges-list">
+          <li><a href="/#">Nothing</a></li>
+        </ul>
+        {% endif %}
+
+
 
         <button class="topup-btn" onclick="topup('{{ priv }}')">Top-Up</button>
     </main>

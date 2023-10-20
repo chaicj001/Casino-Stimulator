@@ -7,12 +7,18 @@ import os
 #personal info script (efficient than older one)
 import info
 
+#new import might be migrate to other python file in future, (currently testing,rollback will be require if testing fail)
 from flask_socketio import SocketIO
+from cachetools import TTLCache
+from flask import make_response
+
 
 
 app = Flask(__name__, template_folder='template')
 app.secret_key = 'mysecretkey'
+
 socketio = SocketIO(app)
+#cache = TTLCache(maxsize=100, ttl=10)
 
 
 # Default Database configuration #casino database
@@ -60,7 +66,7 @@ def login():
         elif info.get_priv(username) == 'banker' and checkstatus(username)== True:
             session['username'] = username
             session['priv'] = info.get_priv(username)
-            session['background_image'] = random.choice(['j1.png', 'j2.png', 'j3.png'])
+            session['background_image'] = random.choice(['banker.jpg'])
             return redirect(url_for('lobby'))
         else:
             return render_template('login.html', error='Account has a problem')
@@ -93,6 +99,7 @@ def handle_update_balance(data):
 def lobby():
     # Get the user's current balance and privileges
     username = session.get('username')
+    background_image=session.get('background_image')
     socketio.emit('user_join', {'username': username}, room=username)
     priv=info.get_priv(username)
     balance=info.get_balance(username)
@@ -102,9 +109,9 @@ def lobby():
         show_winloss = True
 
     # Randomly choose a background image from j1, j2, j3
-    background_image=session.get('background_image')
+    
     # Render the lobby template with the appropriate parameters
-    return render_template('lobby.html', username=username, balance=balance , priv=priv, show_winloss=show_winloss, background_image=background_image)
+    return render_template('lobby.html', balance=balance,username=username , priv=priv, show_winloss=show_winloss, background_image=background_image)
 
 
 @app.route('/topup', methods=['GET', 'POST'])
