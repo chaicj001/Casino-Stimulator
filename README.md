@@ -1,4 +1,4 @@
-# Fake Casino Game
+#Casino Game
 This is the program that include with blackjack, slot machine, and others common game that see in casino
 
 Top-up function is implement but no actual money or transaction will be happen
