@@ -101,15 +101,14 @@ def lobby():
     username = session.get('username')
     background_image=session.get('background_image')
     socketio.emit('user_join', {'username': username}, room=username)
-    priv=info.get_priv(username)
-    balance=info.get_balance(username)
+    priv= info.get_priv(username)
+    balance= info.get_balance(username)
     # Determine whether to show the Win/Loss button based on user's privileges
     show_winloss = False
     if priv in ['banker', 'admin']:
         show_winloss = True
 
-    # Randomly choose a background image from j1, j2, j3
-    
+
     # Render the lobby template with the appropriate parameters
     return render_template('lobby.html', balance=balance,username=username , priv=priv, show_winloss=show_winloss, background_image=background_image)
 
@@ -141,15 +140,14 @@ def topup():
 @app.route('/logout')
 def logout():
     # Update the last_logout field in the database
-    now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now = info.get_now()
     username = session.get('username')
-    cursor = mydb.cursor()
-    cursor.execute("UPDATE user SET last_logout = %s WHERE username = %s", (now, username))
-    mydb.commit()
-    cursor.close()
+    info.update_logout(username,now)
 
     # Clear the session data and redirect to the index page
     session.pop('username', None)
+    session.pop('balance', None)
+    session.pop('background_image', None)
     return redirect(url_for('index'))
 
 @app.route('/blackjack')

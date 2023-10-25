@@ -60,3 +60,19 @@ def check_password(username,password):
         else:
                 return False
 
+
+def get_now():
+        return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+#update script
+def update_logout(username,now):
+        cursor = mydb.cursor()
+        cursor.execute("UPDATE user SET last_logout = %s WHERE username = %s", (now, username))
+        mydb.commit()
+        cursor.close()
+
+def update_balance(username,new_balance):        
+        cursor = mydb.cursor()
+        cursor.execute('UPDATE user SET balance = %s WHERE username = %s', (new_balance, username))
+        mydb.commit()
+        cursor.close()
