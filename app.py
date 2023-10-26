@@ -110,7 +110,7 @@ def lobby():
 
 
     # Render the lobby template with the appropriate parameters
-    return render_template('lobby.html', balance=balance,username=username , priv=priv, show_winloss=show_winloss, background_image=background_image)
+    return render_template('lobby.html', balance= info.get_balance(username),username=username , priv=priv, show_winloss=show_winloss, background_image=background_image)
 
 
 @app.route('/topup', methods=['GET', 'POST'])
@@ -118,24 +118,24 @@ def topup():
     from function import topup_function
     # Get the user's current balance and privileges
     username = session.get('username')
-    balance= session['balance']  = info.get_balance(username)
+    balance= info.get_balance(username)
     priv = info.get_priv(username)
     background_image = session.get('background_image')
 
     if request.method == 'POST':
         if priv == 'admin':
             # Call the topup_function from function.py
-            return topup_function(request, cursor, session['balance'] , username, background_image, is_admin=True)
+            return topup_function(request, cursor, info.get_balance(username) , username, background_image, is_admin=True)
         else:
             # Call the topup_function from function.py
-            return topup_function(request, cursor, session['balance'] , username, background_image, is_admin=False)
+            return topup_function(request, cursor, info.get_balance(username) , username, background_image, is_admin=False)
 
     else:
         # Render the appropriate topup page based on the user's privileges
         if priv == 'admin':
-            return render_template('topup_admin.html', balance=balance , background_image=background_image)
+            return render_template('topup_admin.html', balance=info.get_balance(username) , background_image=background_image)
         else:
-            return render_template('topup.html', balance=balance , is_admin=False, background_image=background_image)
+            return render_template('topup.html', balance=info.get_balance(username) , is_admin=False, background_image=background_image)
 
 @app.route('/logout')
 def logout():
@@ -166,9 +166,7 @@ def winloss():
 
     # Get the user's current balance
     username = session.get('username')
-    cursor = mydb.cursor()
-    cursor.execute('SELECT balance FROM user WHERE username = %s', (username,))
-    session['balance'] = current_balance = float(cursor.fetchone()[0])
+    current_balance = info.get_balance(username)
     background_image=session.get('background_image')
 
     if request.method == 'POST':
@@ -186,7 +184,7 @@ def winloss():
             cursor.execute('UPDATE user SET balance = %s WHERE username = %s', (new_balance, username))
 
             # Deduct double the bet amount from the banker's balance
-            cursor.execute('UPDATE user SET balance = balance - %s WHERE priv = %s', (bet_amount * 2, 'banker'))
+            cursor.execute('UPDATE user SET balance = balance - %s WHERE username = %s', (bet_amount * 2, 'banker'))
 
             # Insert a record into the winloss_history table
             cursor.execute('INSERT INTO winloss_history (username, bet_amount, result, createtime) VALUES (%s, %s, %s, %s)', (username, bet_amount, 'win', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
@@ -219,7 +217,7 @@ def winloss():
 
     else:
         # Render the winloss page template with the current balance
-        return render_template('winloss.html', balance=current_balance,background_image=background_image)
+        return render_template('winloss.html', balance= info.get_balance(username),background_image=background_image)
 
 @app.route('/slotmachine')
 def slotmachine():
@@ -235,7 +233,7 @@ def slotmachine():
     # Initialize symbols to an empty list
     symbols = []
     # Render the slot machine template with the appropriate parameters
-    return render_template('slotmachine.html', username=username, balance=current_balance, symbols=symbols, priv=priv)
+    return render_template('slotmachine.html', username=username, balance=info.get_balance(username) , symbols=symbols, priv=priv)
 
 @app.route('/spin', methods=['POST'])
 def spin():
