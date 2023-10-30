@@ -76,3 +76,5 @@ def update_balance(username,new_balance):
         cursor.execute('UPDATE user SET balance = %s WHERE username = %s', (new_balance, username))
         mydb.commit()
         cursor.close()
+
+

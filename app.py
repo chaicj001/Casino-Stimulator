@@ -99,6 +99,8 @@ def handle_update_balance(data):
 def lobby():
     # Get the user's current balance and privileges
     username = session.get('username')
+    if username == None:
+        return redirect(url_for("index"))
     background_image=session.get('background_image')
     socketio.emit('user_join', {'username': username}, room=username)
     priv= info.get_priv(username)
@@ -107,8 +109,6 @@ def lobby():
     show_winloss = False
     if priv in ['banker', 'admin']:
         show_winloss = True
-
-
     # Render the lobby template with the appropriate parameters
     return render_template('lobby.html', balance= info.get_balance(username),username=username , priv=priv, show_winloss=show_winloss, background_image=background_image)
 
@@ -154,7 +154,13 @@ def logout():
 def blackjack():
     username = session.get('username')
     current_balance = info.get_balance(username)
-
+    deck = function.shuffle_deck()
+    dealer_hand = [deck.pop(), deck.pop()]
+    player_hand = [deck.pop(), deck.pop()]
+    dealer_score = calculate_hand(dealer_hand)
+    player_score = calculate_hand(player_hand)
+    return render_template('blackjack.html', dealer_hand=dealer_hand, player_hand=player_hand,
+                           dealer_score=dealer_score, player_score=player_score)
     return render_template('blackjack.html',balance=current_balance)
 
 @app.route('/winloss', methods=['GET', 'POST'])

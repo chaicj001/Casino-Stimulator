@@ -3,6 +3,7 @@ import mysql.connector
 import string
 import datetime
 from flask import Flask,flash, render_template, request, redirect, url_for, session, jsonify, abort
+import info 
 
 rdb = mysql.connector.connect(
     host="localhost",
@@ -268,4 +269,24 @@ def delete_all_referrals():
     cursor = rdb.cursor()
     cursor.execute('DELETE FROM referal')
     rdb.commit()
+
+
+
+cards = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 10, 'Q': 10, 'K': 10, 'A': 11}
+
+# Function to shuffle a deck of cards
+def shuffle_deck():
+    deck = list(cards.keys()) * 4  # Four suits
+    random.shuffle(deck)
+    return deck
+
+# Function to calculate the total value of a hand
+def calculate_hand(hand):
+    total = sum([cards[card] for card in hand])
+    # Handle Aces (count as 11 or 1)
+    aces = hand.count('A')
+    while total > 21 and aces:
+        total -= 10
+        aces -= 1
+    return total
 

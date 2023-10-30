@@ -3,7 +3,7 @@
   <head>
     <title>Blackjack</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <link rel="stylesheet" type="text/css" href="static/blackjack.css">
+    <link rel="stylesheet" type="text/css" href="static/common.css">
   </head>
   <body>
     <header>
@@ -19,19 +19,31 @@
           <a class="logout-btn" onclick="logout()">Logout</a>
         </div>
       </div>
-    </header>    
+    </header>
     <div class="container">
       <h2>Dealer</h2>
-      <div class="cards" id="dealer-hand">
+      <div id="dealer-hand">
+        {% for card in dealer_hand %}
+          <img src="static/cards/{{ card }}.png" alt="{{ card }}">
+        {% endfor %}
       </div>
-      <div id="dealer-score"></div>
+      <div id="dealer-score">{{ dealer_score }}</div>
+      
       <h2>Player</h2>
-      <div class="cards" id="player-hand">
+      <div id="player-hand">
+        {% for card in player_hand %}
+          <img src="static/cards/{{ card }}.png" alt="{{ card }}">
+        {% endfor %}
       </div>
-      <div id="player-score"></div>
+      <div id="player-score">{{ player_score }}</div>
+      
       <div id="outcome"></div>
-      <button id="play-btn">Play</button>
+      <form method="POST" action="/hit">
+        <button id="hit-btn">Hit</button>
+      </form>
+      <form method="POST" action="/stand">
+        <button id="stand-btn">Stand</button>
+      </form>
     </div>
-    <script src="static/blackjack.js"></script>
   </body>
 </html>
