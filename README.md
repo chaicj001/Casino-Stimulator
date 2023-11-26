@@ -6,7 +6,7 @@ This program includes popular casino games such as blackjack, slot machines, and
 
 **Database update is required for each new version of the code.**
 
-## Updated
+## Nov 20 Updated
 
 A new game, 4D, has been released. Similar to real-world 4D, players need to buy a 4-digit ticket and wait for the final result to claim the rewards.
 
@@ -22,4 +22,4 @@ No actual money inflow or outflow occurs in this program, and no server is conne
 
 # Contributor
 
-Fully contributed by myself and assisted by ChatGPT.
+Fully contributed by chekJu and assisted by ChatGPT.
