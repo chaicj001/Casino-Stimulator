@@ -1,29 +1,25 @@
-#Casino Game
-This is the program that include with blackjack, slot machine, and others common game that see in casino
+# Casino Game
 
-Top-up function is implement but no actual money or transaction will be happen
+This program includes popular casino games such as blackjack, slot machines, and others commonly seen in casinos.
 
-** Database is require to updated for each time new version of code been pushed
+**Top-up function is implemented, but no actual money or transactions will occur.**
 
---Updated--
+**Database update is required for each new version of the code.**
 
-New game 4D are release just like the real-world 4D require to buy 4 digits ticket and see wait for the final result to claim the rewards 
+## Updated
 
-#Disclaimer 
+A new game, 4D, has been released. Similar to real-world 4D, players need to buy a 4-digit ticket and wait for the final result to claim the rewards.
 
-No actual money inflow or outflow for this program, no server is been connected. Only localhost is been connected (coded)
+# Disclaimer
 
-#Program requirement
+No actual money inflow or outflow occurs in this program, and no server is connected. Only localhost is used (coded).
 
-Flask environment 
+# Program Requirement
 
-Browser
+- Flask environment
+- Browser
+- XAMPP or other localhost programs
 
-XAMPP or other localhost program
+# Contributor
 
-#Contributor
-
-Fuilly contribute by myself and asist by ChatGPT 
-
-
- 
+Fully contributed by myself and assisted by ChatGPT.
