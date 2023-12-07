@@ -6,9 +6,9 @@ This program includes popular casino games such as blackjack, slot machines, and
 
 **Database update is required for each new version of the code.**
 
-## Nov 20 Updated
+## Dec 7 Updated
 
-A new game, 4D, has been released. Similar to real-world 4D, players need to buy a 4-digit ticket and wait for the final result to claim the rewards.
+BlackJack Game is release with better gameplay experiences  
 
 # Disclaimer
 
