@@ -1,7 +1,9 @@
 {% extends "slotmachine_base.html" %}
 
 {% block content %}
-<link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+<link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">    
+<link rel="stylesheet" type="text/css" href="static/common.css">
+
 <title>Slot Machine Results</title>
 
 <p>Your bet amount: ${{ '{:,.2f}'.format(bet_amount) }}</p>

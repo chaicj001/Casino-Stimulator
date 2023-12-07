@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>Blackjack</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <title>Casino Win/Loss</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='common.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='winloss.css') }}">
+    <link rel="stylesheet" type="text/css" href="static/common.css">
+    <link rel="stylesheet" type="text/css" href="static/winloss.css"> 
   </head>
-  <body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');">
   <body>
     <header>
       <div class="header-container">

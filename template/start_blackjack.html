@@ -32,12 +32,12 @@
       <h2>Player</h2>
       <div id="player-hand">
         {% for card in player_hand %}
-          <img src="static/cards/{{ card }}.png" alt="{{ card }}">
+          <img src="static cards/{{ card }}.png" alt="{{ card }}">
         {% endfor %}
       </div>
       <div id="player-score">{{ player_score }}</div>
       
-      <div id="outcome"></div>
+      <div id="outcome">{{ outcome }}</div>  <!-- Include the outcome here -->
       
       <form method="POST" action="/start_blackjack">
         <button id="start-blackjack-btn">Start Blackjack</button>

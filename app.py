@@ -5,7 +5,9 @@ import random
 from flask_login import LoginManager, login_required, current_user
 import os
 #personal info script (efficient than older one)
-import info
+import info,function
+from decimal import Decimal
+
 
 #new import might be migrate to other python file in future, (currently testing,rollback will be require if testing fail)
 from flask_socketio import SocketIO
@@ -83,7 +85,7 @@ def submit():
     
     result= info.check_password(username,password)
     # Check if the user exists and the password is correct
-    if user is not None and result==True:
+    if username is not None and result==True:
         return redirect(url_for("lobby", username=username))
     else:
         return render_template("login.html", error="Invalid username or password")
@@ -125,10 +127,10 @@ def topup():
     if request.method == 'POST':
         if priv == 'admin':
             # Call the topup_function from function.py
-            return topup_function(request, cursor, info.get_balance(username) , username, background_image, is_admin=True)
+            return topup_function(request, info.get_balance(username) , username, background_image, is_admin=True)
         else:
             # Call the topup_function from function.py
-            return topup_function(request, cursor, info.get_balance(username) , username, background_image, is_admin=False)
+            return topup_function(request, info.get_balance(username) , username, background_image, is_admin=False)
 
     else:
         # Render the appropriate topup page based on the user's privileges
@@ -154,76 +156,90 @@ def logout():
 def blackjack():
     username = session.get('username')
     current_balance = info.get_balance(username)
+    return render_template('blackjack.html', username=username,balance=current_balance)
+    
+@app.route('/start_blackjack', methods=['GET', 'POST'])
+def start_blackjack():
+    username = session.get('username')
+    current_balance = info.get_balance(username)
     deck = function.shuffle_deck()
     dealer_hand = [deck.pop(), deck.pop()]
     player_hand = [deck.pop(), deck.pop()]
-    dealer_score = calculate_hand(dealer_hand)
-    player_score = calculate_hand(player_hand)
-    return render_template('blackjack.html', dealer_hand=dealer_hand, player_hand=player_hand,
-                           dealer_score=dealer_score, player_score=player_score)
-    return render_template('blackjack.html',balance=current_balance)
+    dealer_score = function.calculate_hand(dealer_hand)
+    player_score = function.calculate_hand(player_hand)
+    outcome = ""
+
+    # Determine the outcome based on the scores
+    if player_score > 21:
+        outcome = 'Player Busts. Dealer Wins!'
+    elif dealer_score > 21 or dealer_score < player_score:
+        outcome = 'Player Wins!'
+    elif dealer_score > player_score:
+        outcome = 'Dealer Wins!'
+    else:
+        outcome = 'It\'s a Tie!'
+
+    return render_template('start_blackjack.html', dealer_hand=dealer_hand, player_hand=player_hand,
+                           dealer_score=dealer_score, player_score=player_score, outcome=outcome,
+                           username=username, balance=current_balance)
+
+PRIV_ADMIN = 'admin'
+PRIV_BANKER = 'banker'
+
+RESULT_WIN = 'win'
+RESULT_LOSS = 'loss'
 
 @app.route('/winloss', methods=['GET', 'POST'])
 def winloss():
-    # Check if the user has admin or banker privileges
     priv = session.get('priv')
-    if priv != 'admin' and priv != 'banker':
-        abort(403) # Return a 403 Forbidden error if the user does not have the required privileges
+    if priv not in [PRIV_ADMIN, PRIV_BANKER]:
+        abort(403)
 
-    # Get the user's current balance
     username = session.get('username')
     current_balance = info.get_balance(username)
-    background_image=session.get('background_image')
+    background_image = session.get('background_image')
 
     if request.method == 'POST':
-        # Get the bet amount from the form
         bet_amount = float(request.form['bet_amount'])
 
-        # Check if the bet amount is greater than the user's current balance
         if bet_amount > current_balance:
             flash('Bet amount cannot be greater than your current balance!', 'danger')
             return redirect(url_for('winloss'))
 
         if request.form['submit'] == 'win':
-            # Double the bet amount and add it to the user's balance
-            new_balance = current_balance + bet_amount * 2
-            cursor.execute('UPDATE user SET balance = %s WHERE username = %s', (new_balance, username))
-
-            # Deduct double the bet amount from the banker's balance
-            cursor.execute('UPDATE user SET balance = balance - %s WHERE username = %s', (bet_amount * 2, 'banker'))
-
-            # Insert a record into the winloss_history table
-            cursor.execute('INSERT INTO winloss_history (username, bet_amount, result, createtime) VALUES (%s, %s, %s, %s)', (username, bet_amount, 'win', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-
-            # Commit the changes to the database and close the cursor
-            mydb.commit()
-            cursor.close()
-
-            # Redirect back to the winloss page with a success message
+            handle_win(username, bet_amount)
             flash(('success', f'Successfully won ${bet_amount * 2}!'))
-            return redirect(url_for('winloss'))
         elif request.form['submit'] == 'loss':
-            # Subtract the bet amount from the user's balance
-            new_balance = current_balance - bet_amount
-            cursor.execute('UPDATE user SET balance = %s WHERE username = %s', (new_balance, username))
-
-            # Add the bet amount to the banker's balance
-            cursor.execute('UPDATE user SET balance = balance + %s WHERE priv = %s', (bet_amount, 'banker'))
-
-            # Insert a record into the winloss_history table
-            cursor.execute('INSERT INTO winloss_history (username, bet_amount, result, createtime) VALUES (%s, %s, %s, %s)', (username, bet_amount, 'loss', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-
-            # Commit the changes to the database and close the cursor
-            mydb.commit()
-            cursor.close()
-
-            # Redirect back to the winloss page with a success message
+            handle_loss(username, bet_amount)
             flash(('warning', 'Better luck next time!'))
-            return redirect(url_for('winloss'))
 
-    else:
-        # Render the winloss page template with the current balance
-        return render_template('winloss.html', balance= info.get_balance(username),background_image=background_image)
+        return redirect(url_for('winloss'))
+
+    return render_template('winloss.html', balance=info.get_balance(username), background_image=background_image)
+
+
+def handle_win(username, bet_amount):
+    new_balance = info.get_balance(username) + Decimal(str(bet_amount)) * 2
+    info.update_balance(username, new_balance)
+    info.update_balance(PRIV_BANKER, info.get_balance(PRIV_BANKER) - Decimal(str(bet_amount)) * 2)
+    insert_winloss_record(username, bet_amount, RESULT_WIN)
+
+
+def handle_loss(username, bet_amount):
+    new_balance = info.get_balance(username) - Decimal(str(bet_amount))
+    info.update_balance(username, new_balance)
+    info.update_balance(PRIV_BANKER, info.get_balance(PRIV_BANKER) + bet_amount)
+    insert_winloss_record(username, bet_amount, RESULT_LOSS)
+
+
+def insert_winloss_record(username, bet_amount, result):
+    cursor = mydb.cursor()
+    cursor.execute(
+        'INSERT INTO winloss_history (username, bet_amount, result, createtime) VALUES (%s, %s, %s, %s)',
+        (username, bet_amount, result, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    )
+    mydb.commit()
+    cursor.close()
 
 @app.route('/slotmachine')
 def slotmachine():
@@ -288,17 +304,17 @@ def referal():
                 function.insertreftable(referral_code, balance_type,username)
             flash(f"Generated {num_referrals} referral codes: {', '.join(referral_codes)}")
 
-    return render_template('referal.html',background_image=session.get('background_image'),balance=session.get('balance'))
+    return render_template('referal.html',background_image=session.get('background_image'),balance=info.get_balance(username))
 
 @app.route('/viewref')
 def view_referrals():
     import function
     referrals = function.get_referrals()
-    return render_template('viewref.html', referrals=referrals, background_image=session.get('background_image'),balance=session.get('balance'))
+    return render_template('viewref.html', referrals=referrals, background_image=session.get('background_image'),balance=info.get_balance(session.get('username')))
 
 @app.route('/referalcollect', methods=['GET', 'POST'])
 def referalcollect():
-    return render_template('referalcollect.html', background_image=session.get('background_image'), balance=session.get('balance'))
+    return render_template('referalcollect.html', background_image=session.get('background_image'), balance=info.get_balance(session.get('username')))
 
 @app.route('/referalcollectsubmit', methods=['GET', 'POST'])
 def refsubmit():
@@ -335,13 +351,14 @@ def game4d():
     cursor = mydb.cursor()
     cursor.execute('SELECT balance FROM user WHERE username = %s', (username,))
     balance = float(cursor.fetchone()[0])
-    return render_template('game4d.html',background_image=session.get('background_image'), balance=session.get('balance'))
+    return render_template('game4d.html',background_image=session.get('background_image'), balance=info.get_balance(username))
 
 
 #admin 4d game control page
 @app.route('/game4dadmin')
 def admin4dsubmit():
-    return render_template('game4dadmin.html',background_image=session.get('background_image'), balance=session.get('balance'))
+    username = session.get('username')
+    return render_template('game4dadmin.html',background_image=session.get('background_image'), balance=info.get_balance(username))
 
 
 
@@ -363,7 +380,7 @@ def admintoto():
     cursor = mydb.cursor()
     cursor.execute('SELECT balance FROM user WHERE username = %s', (username,))
     balance = float(cursor.fetchone()[0])
-    return render_template('admintoto.html',background_image=session.get('background_image'), balance=session.get('balance'))
+    return render_template('admintoto.html',background_image=session.get('background_image'), balance=info.get_balance(username))
 
 #toto game (update require)
 @app.route('/admintotosubmit', methods=['POST'])
@@ -377,7 +394,7 @@ def admin4dtotosubmit():
     group6 = request.form.get('group6')
     group7 = request.form.get('group7')
     cursor = mydb.cursor()
-    cursor.execute('INSERT INTO toto_4d (toto_number, username) VALUES (%s, %s)', (toto_number, username))
+    #cursor.execute('INSERT INTO toto_4d (toto_number, username) VALUES (%s, %s)', (toto_number, username))
     mydb.commit()
     cursor.close()
     return redirect(url_for('lobby'))

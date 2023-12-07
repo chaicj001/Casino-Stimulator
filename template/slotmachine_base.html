@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>Blackjack</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <title>{% block title %}Diamind Casino{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='slotmachine.css') }}">
+    <link rel="stylesheet" type="text/css" href="static/common.css">
+    <link rel="stylesheet" type="text/css" href="static/slotmachine.css">
   </head>
   <body>
     <header>
@@ -16,7 +17,6 @@
         <div class="balance-container">
           <p>Balance:</p>
           <span>${{ '{:,.0f}'.format(balance) }}</span>
-          <a href="/lobby" class="lobby-btn">Back to Lobby</a>
           <a class="logout-btn" onclick="logout()">Logout</a>
         </div>
       </div>
