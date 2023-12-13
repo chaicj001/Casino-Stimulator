@@ -270,15 +270,26 @@ def delete_all_referrals():
     cursor.execute('DELETE FROM referal')
     rdb.commit()
 
-
-
 cards = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 10, 'Q': 10, 'K': 10, 'A': 11}
 
 # Function to shuffle a deck of cards
-def shuffle_deck():
+def create_deck():
     deck = list(cards.keys()) * 4  # Four suits
     random.shuffle(deck)
     return deck
+
+def create_deck_emoji():
+    deck = list(cards.keys()) * 4  # Four suits
+    deck_with_emoji = ['♠️ ' + card for card in deck if card != 'A']
+    deck_with_emoji += ['♠️ A'] * deck.count('A')
+    deck_with_emoji += ['♥️ ' + card for card in deck if card != 'A']
+    deck_with_emoji += ['♥️ A'] * deck.count('A')
+    deck_with_emoji += ['♦️ ' + card for card in deck if card != 'A']
+    deck_with_emoji += ['♦️ A'] * deck.count('A')
+    deck_with_emoji += ['♣️ ' + card for card in deck if card != 'A']
+    deck_with_emoji += ['♣️ A'] * deck.count('A')
+    random.shuffle(deck_with_emoji)
+    return deck_with_emoji
 
 # Function to calculate the total value of a hand
 def calculate_hand(hand):
@@ -290,3 +301,12 @@ def calculate_hand(hand):
         aces -= 1
     return total
 
+# Function to calculate the total value of a hand with emoji deck
+def calculate_hand_emoji(hand):
+    total = sum([cards[card[3:]] for card in hand])
+    # Handle Aces (count as 11 or 1)
+    aces = hand.count('A')
+    while total > 21 and aces:
+        total -= 10
+        aces -= 1
+    return total

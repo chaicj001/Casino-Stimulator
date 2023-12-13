@@ -162,14 +162,48 @@ def blackjack():
 def start_blackjack():
     username = session.get('username')
     current_balance = info.get_balance(username)
-    deck = function.shuffle_deck()
+    game_started = True  # You need to determine whether the game has started based on your logic
+
+    # The main deck, ensuring that each game the deck is clean and regenerated
+    deck = function.create_deck_emoji()
     dealer_hand = [deck.pop(), deck.pop()]
     player_hand = [deck.pop(), deck.pop()]
-    dealer_score = function.calculate_hand(dealer_hand)
-    player_score = function.calculate_hand(player_hand)
+    dealer_score = function.calculate_hand_emoji(dealer_hand)
+    player_score = function.calculate_hand_emoji(player_hand)
     outcome = ""
 
-    # Determine the outcome based on the scores
+    if game_started and request.method == 'POST':
+        action = request.form.get('action')
+
+        # Check for blackjack in the first round
+        if player_score == 21 or dealer_score == 21:
+            determine_outcome(player_score, dealer_score)
+        else:
+            if action == 'hit':
+                player_hand.append(deck.pop())
+                player_score = function.calculate_hand_emoji(player_hand)
+                if player_score > 21:
+                    outcome = 'You have busted! You Lose!'
+                    game_started = False  # End the game
+
+            elif action == 'stand':
+                while dealer_score < 17:
+                    dealer_hand.append(deck.pop())
+                    dealer_score = function.calculate_hand_emoji(dealer_hand)
+                determine_outcome(player_score, dealer_score)
+
+    # If the game has not started, or the initial deal hasn't happened yet, render the initial state
+    if not game_started or (game_started and not request.method == 'POST'):
+        return render_template('blackjack.html', dealer_hand=dealer_hand, player_hand=player_hand,
+                               dealer_score=dealer_score, player_score=player_score, outcome=outcome,
+                               username=username, balance=current_balance, game_started=game_started)
+
+    return render_template('blackjack.html', dealer_hand=dealer_hand, player_hand=player_hand,
+                           dealer_score=dealer_score, player_score=player_score, outcome=outcome,
+                           username=username, balance=current_balance, game_started=game_started)
+
+def determine_outcome(player_score, dealer_score):
+    global outcome  # Use a global variable for outcome to set it outside of the local scope
     if player_score > 21:
         outcome = 'Player Busts. Dealer Wins!'
     elif dealer_score > 21 or dealer_score < player_score:
@@ -178,10 +212,6 @@ def start_blackjack():
         outcome = 'Dealer Wins!'
     else:
         outcome = 'It\'s a Tie!'
-
-    return render_template('start_blackjack.html', dealer_hand=dealer_hand, player_hand=player_hand,
-                           dealer_score=dealer_score, player_score=player_score, outcome=outcome,
-                           username=username, balance=current_balance)
 
 PRIV_ADMIN = 'admin'
 PRIV_BANKER = 'banker'

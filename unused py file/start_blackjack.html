@@ -1,10 +1,18 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Blackjack</title>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
   <link rel="stylesheet" type="text/css" href="static/common.css">
+  <style>
+    /* Additional style for the new buttons */
+    #hit-btn, #double-btn, #stand-btn, #restart-btn {
+      display: none;
+    }
+  </style>
 </head>
+
 <body>
   <header>
     <div class="header-container">
@@ -21,10 +29,10 @@
     </div>
   </header>
   <div class="container">
-    <h2>Dealer</h2>
+    <h2>Dealer</h2> <h4> Dealer must hold 17</h4>
     <div id="dealer-hand">
       {% for card in dealer_hand %}
-        <img src="static/cards/{{ card }}.png" alt="{{ card }}">
+      <img src="static/cards/{{ card }}.png" alt="{{ card }}">
       {% endfor %}
     </div>
     <div id="dealer-score">{{ dealer_score }}</div>
@@ -32,29 +40,24 @@
     <h2>Player</h2>
     <div id="player-hand">
       {% for card in player_hand %}
-        <img src="static/cards/{{ card }}.png" alt="{{ card }}">
+      <img src="static/cards/{{ card }}.png" alt="{{ card }}">
       {% endfor %}
     </div>
     <div id="player-score">{{ player_score }}</div>
 
-    <div id="outcome">{{ outcome }}</div>
+    <div id="outcome">{{ outcome }}</div> <!-- Include the outcome here -->
 
-    {% if game_started %}
-      <form id="start-blackjack-form" method="post" action="/start_blackjack" onload="startBlackjack()">
-        <button id="start-blackjack-btn" type="button" onclick="startBlackjack()">Start Blackjack</button>
-        <button id="hit-btn" name="action" value="hit" type="button" onclick="hit()">Hit</button>
-        <button id="double-btn" name="action" value="double" type="button" onclick="double()">Double</button>
-        <button id="stand-btn" name="action" value="stand" type="button" onclick="stand()">Stand</button>
-        <button id="restart-btn" type="button" onclick="restartGame()">Restart Game</button>
-      </form>
-    {% else %}
-      <form method="POST" action="/start_blackjack">
-        <button id="start-blackjack-btn">Start Blackjack</button>
-      </form>
-    {% endif %}
+    <form id="start-blackjack-form" method="post" action="/start_blackjack" onload="startBlackjack()">
+      <button id="start-blackjack-btn" type="button" onclick="startBlackjack()">Start Blackjack</button>
+      <button id="hit-btn" name="action" value="hit" type="button" onclick="hit()">Hit</button>
+      <button id="double-btn" name="action" value="double" type="button" onclick="double()">Double</button>
+      <button id="stand-btn" name="action" value="stand" type="button" onclick="stand()">Stand</button>
+      <button id="restart-btn" type="button" onclick="restartGame()">Restart Game</button>
+    </form>
   </div>
+
   <script>
-    let gameStarted = true;
+    let gameStarted = false;
   
     function startBlackjack() {
       if (!gameStarted) {
@@ -145,4 +148,5 @@
   
   </script>
 </body>
+
 </html>
