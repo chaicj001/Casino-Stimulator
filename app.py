@@ -4,9 +4,11 @@ import datetime
 import random
 from flask_login import LoginManager, login_required, current_user
 import os
+from flask_socketio import SocketIO, emit
+from decimal import Decimal
 #personal info script (efficient than older one)
 import info,function
-from decimal import Decimal
+
 
 
 #new import might be migrate to other python file in future, (currently testing,rollback will be require if testing fail)
@@ -158,60 +160,106 @@ def blackjack():
     current_balance = info.get_balance(username)
     return render_template('blackjack.html', username=username,balance=current_balance)
     
-@app.route('/start_blackjack', methods=['GET', 'POST'])
+class BlackjackGame:
+    def __init__(self):
+        self.game_state = {
+            'dealer_hand': [],
+            'player_hand': [],
+            'dealer_score': 0,
+            'player_score': 0,
+            'outcome': "",
+            'game_started': False
+        }
+        self.deck = []
+
+    def reset_game_state(self):
+        self.deck = []
+        self.game_state = {
+            'dealer_hand': [],
+            'player_hand': [],
+            'dealer_score': 0,
+            'player_score': 0,
+            'outcome': "",
+            'game_started': False
+        }
+
+    def start_game(self):
+        self.reset_game_state()
+        self.deck = function.create_deck_emoji()
+        self.game_state['dealer_hand'] = [self.deck.pop(), self.deck.pop()]
+        self.game_state['player_hand'] = [self.deck.pop(), self.deck.pop()]
+        self.game_state['dealer_score'] = function.calculate_hand_emoji(self.game_state['dealer_hand'])
+        self.game_state['player_score'] = function.calculate_hand_emoji(self.game_state['player_hand'])
+        self.game_state['outcome'] = ""
+        self.game_state['game_started'] = True
+
+    def player_action(self, action):
+        if self.game_state['game_started']:
+            if action == 'hit':
+                self.game_state['player_hand'].append(self.deck.pop())
+                self.game_state['player_score'] = function.calculate_hand_emoji(self.game_state['player_hand'])
+                if self.game_state['player_score'] > 21:
+                    self.game_state['outcome'] = 'You have busted! You Lose!'
+                    self.game_state['game_started'] = False  # End the game
+
+            elif action == 'stand':
+                print('Player stands. Dealer is playing.')
+
+                # After player action, dealer will act
+                while self.game_state['dealer_score'] < 17:
+                    self.game_state['dealer_hand'].append(self.deck.pop())
+                    self.game_state['dealer_score'] = function.calculate_hand_emoji(self.game_state['dealer_hand'])
+
+                # Final calculate here
+                self.determine_outcome()
+                self.game_state['game_started'] = False  # End the game
+
+    def determine_outcome(self):
+        if self.game_state['player_score'] > 21:
+            self.game_state['outcome'] = 'Player Busts. Dealer Wins!'
+        elif self.game_state['dealer_score'] > 21 or self.game_state['dealer_score'] < self.game_state['player_score']:
+            self.game_state['outcome'] = 'Player Wins!'
+        elif self.game_state['dealer_score'] > self.game_state['player_score']:
+            self.game_state['outcome'] = 'Dealer Wins!'
+        elif self.game_state['dealer_score'] == self.game_state['player_score']:
+            self.game_state['outcome'] = 'It\'s a Tie!'
+        else:
+            self.game_state['outcome'] = 'Error, Please check with the Dealer!'
+
+# Create an instance of the BlackjackGame class
+blackjack_game = BlackjackGame()
+
+@app.route('/start_blackjack')
 def start_blackjack():
     username = session.get('username')
     current_balance = info.get_balance(username)
-    game_started = True  # You need to determine whether the game has started based on your logic
-
-    # The main deck, ensuring that each game the deck is clean and regenerated
-    deck = function.create_deck_emoji()
-    dealer_hand = [deck.pop(), deck.pop()]
-    player_hand = [deck.pop(), deck.pop()]
-    dealer_score = function.calculate_hand_emoji(dealer_hand)
-    player_score = function.calculate_hand_emoji(player_hand)
-    outcome = ""
-
-    if game_started and request.method == 'POST':
-        action = request.form.get('action')
-
-        # Check for blackjack in the first round
-        if player_score == 21 or dealer_score == 21:
-            determine_outcome(player_score, dealer_score)
-        else:
-            if action == 'hit':
-                player_hand.append(deck.pop())
-                player_score = function.calculate_hand_emoji(player_hand)
-                if player_score > 21:
-                    outcome = 'You have busted! You Lose!'
-                    game_started = False  # End the game
-
-            elif action == 'stand':
-                while dealer_score < 17:
-                    dealer_hand.append(deck.pop())
-                    dealer_score = function.calculate_hand_emoji(dealer_hand)
-                determine_outcome(player_score, dealer_score)
 
     # If the game has not started, or the initial deal hasn't happened yet, render the initial state
-    if not game_started or (game_started and not request.method == 'POST'):
-        return render_template('blackjack.html', dealer_hand=dealer_hand, player_hand=player_hand,
-                               dealer_score=dealer_score, player_score=player_score, outcome=outcome,
-                               username=username, balance=current_balance, game_started=game_started)
+    if not blackjack_game.game_state['game_started']:
+        return render_template('blackjack.html', **blackjack_game.game_state, username=username, balance=current_balance)
 
-    return render_template('blackjack.html', dealer_hand=dealer_hand, player_hand=player_hand,
-                           dealer_score=dealer_score, player_score=player_score, outcome=outcome,
-                           username=username, balance=current_balance, game_started=game_started)
+    # Emit initial game state to the client
+    emit('game_state', blackjack_game.game_state, namespace='/game')
 
-def determine_outcome(player_score, dealer_score):
-    global outcome  # Use a global variable for outcome to set it outside of the local scope
-    if player_score > 21:
-        outcome = 'Player Busts. Dealer Wins!'
-    elif dealer_score > 21 or dealer_score < player_score:
-        outcome = 'Player Wins!'
-    elif dealer_score > player_score:
-        outcome = 'Dealer Wins!'
-    else:
-        outcome = 'It\'s a Tie!'
+    return render_template('blackjack.html', **blackjack_game.game_state, username=username, balance=current_balance)
+
+# WebSocket event handlers
+@socketio.on('start_game', namespace='/game')
+def start_game():
+    # Reset game state and start a new game
+    blackjack_game.start_game()
+
+    # Emit the initial game state to the client
+    emit('game_state', blackjack_game.game_state, namespace='/game', broadcast=True)
+
+@socketio.on('player_action', namespace='/game')
+def player_action(data):
+    action = data['action']
+    blackjack_game.player_action(action)
+
+    # Emit the updated game state to the client
+    emit('game_state', blackjack_game.game_state, namespace='/game', broadcast=True)
+
 
 PRIV_ADMIN = 'admin'
 PRIV_BANKER = 'banker'
@@ -247,14 +295,14 @@ def winloss():
 
     return render_template('winloss.html', balance=info.get_balance(username), background_image=background_image)
 
-
+#for win loss game (win)
 def handle_win(username, bet_amount):
     new_balance = info.get_balance(username) + Decimal(str(bet_amount)) * 2
     info.update_balance(username, new_balance)
     info.update_balance(PRIV_BANKER, info.get_balance(PRIV_BANKER) - Decimal(str(bet_amount)) * 2)
     insert_winloss_record(username, bet_amount, RESULT_WIN)
 
-
+#for win loss game (loss)
 def handle_loss(username, bet_amount):
     new_balance = info.get_balance(username) - Decimal(str(bet_amount))
     info.update_balance(username, new_balance)
