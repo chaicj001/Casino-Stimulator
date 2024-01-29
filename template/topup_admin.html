@@ -6,20 +6,6 @@
     <link rel="stylesheet" type="text/css" href="static/common.css">
   </head>
   <body>
-    <header>
-      <div class="header-container">
-        <div class="logo-container">
-          <a href="/lobby">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
-          </a>
-        </div>
-        <div class="balance-container">
-          <p>Balance:</p>
-          <span>${{ '{:,.0f}'.format(balance) }}</span>
-          <a class="logout-btn" onclick="logout()">Logout</a>
-        </div>
-      </div>
-    </header>
       <div class="header-container">
         <div class="logo-container">
           <a href="/lobby">

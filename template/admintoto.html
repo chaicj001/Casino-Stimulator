@@ -1,25 +1,27 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <title>TOTO Rewards Creation</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='lobby.css') }}">
-  </head>
-  <body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');"> 
-    <header>
-      <div class="header-container">
-        <div class="logo-container">
-          <a href="/lobby">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
-          </a>
-        </div>
-        <nav class="balance-container">
-          <p>Balance:</p>
-          <span>${{ '{:,.0f}'.format(balance) }}</span>
-          <button class="logout-btn" onclick="logout()">Logout</button>
-        </nav>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blackjack</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="stylesheet" type="text/css" href="static/common.css">
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <div class="logo-container">
+        <a href="/lobby">
+          <img src="{{ url_for('static', filename='logo.png') }}" alt="Casino Logo">
+        </a>
       </div>
-    </header>
+      <div class="balance-container">
+        <p>Balance:</p>
+        <span>${{ '{:,.0f}'.format(balance) }}</span>
+        <a class="logout-btn" onclick="logout()">Logout</a>
+      </div>
+    </div>
+  </header>
     <main class="container">
       <h1>Admin TOTO pool creation</h1>
       <form method="POST" action="/admintotosubmit">
@@ -70,5 +72,11 @@
         <input type="submit" value="Submit">
       </form>
     </main>
-  </body>
+  </body>    
+  <script>
+    function logout() {
+      // Clear the browsing history
+      window.location.replace('/logout');
+    }
+  </script>
 </html>

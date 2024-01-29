@@ -11,12 +11,6 @@ rdb = mysql.connector.connect(
     password="",
     database="casino_regis")
 
-mydb = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",
-        database="casino")
-
 game4ddb= mysql.connector.connect(
     host="localhost",
     user="root",
@@ -84,15 +78,10 @@ def receivedref(referral, username):
                    (referral, balance, created, username))
     cursor.execute('DELETE FROM referal WHERE referal_code = %s', (referral,))
 
-    cursor = mydb.cursor()
-    cursor.execute('SELECT balance FROM user WHERE username = %s', (username,))
-    result2 = cursor.fetchone()
-    user_balance = float(result2[0])
 
-    new_balance = user_balance + balance
-    cursor.execute('UPDATE user SET balance = %s WHERE username = %s', (new_balance, username))
+    new_balance = info.get_balance(username) + balance
+    info.update_balance(username, new_balance)  
 
-    mydb.commit()
     rdb.commit()
     return new_balance
 
@@ -103,83 +92,64 @@ def errorleh():
 
 
 def spin_slot_machine(username, bet_amount):
-    cursor = mydb.cursor()
-    cursor.execute('SELECT balance, priv FROM user WHERE username = %s', (username,))
-    result = cursor.fetchone()
-    session['balance'] =current_balance = float(result[0])
 
-    priv = result[1] if result else None
+    current_balance = info.get_balance(username)
+
 
     if bet_amount > current_balance:
         flash('Bet amount cannot be greater than your current balance!', 'danger')
         return redirect(url_for('slotmachine'))
 
-    session['balance'] =new_balance = current_balance - bet_amount
-    cursor.execute('UPDATE user SET balance = %s WHERE username = %s', (new_balance, username))
-    cursor.execute('SELECT balance FROM user WHERE username = %s', ('banker',))
-    banker_result = cursor.fetchone()
-    banker_balance = float(banker_result[0]) + bet_amount
-    cursor.execute('UPDATE user SET balance = %s WHERE username = %s', (banker_balance, 'banker'))
+    new_balance = current_balance - bet_amount
+    info.update_balance(username, new_balance)
+
+    banker_balance = info.get_balance('banker') + bet_amount
+    info.update_balance('banker', banker_balance)
 
     symbols = []
     for _ in range(3):
         symbols.append(random.choice(['chicken', 'cow', 'dog', 'dragon', 'goat', 'monkey', 'pig', 'rabbit', 'rat',
                                       'snake', 'tiger', 'horse']))
 
+    # checking the function all work for not
     symbols[0] = symbols[1] = symbols[2] = 'dragon'
     winnings = 0
+    symbol_winnings = {
+        "chicken": 10,
+        "cow": 10,
+        "dog": 10,
+        "dragon": 20,
+        "goat": 10,
+        "monkey": 10,
+        "pig": 10,
+        "rabbit": 10,
+        "rat": 10,
+        "snake": 10,
+        "tiger": 10,
+        "horse": 10
+    }
+
     if symbols[0] == symbols[1] == symbols[2]:
-        if symbols[0] == "chicken":
-            winnings = bet_amount * 10
-        elif symbols[0] == "cow":
-            winnings = bet_amount * 10
-        elif symbols[0] == "dog":
-            winnings = bet_amount * 10
-        elif symbols[0] == "dragon":
-            winnings = bet_amount * 20
-        elif symbols[0] == "goat":
-            winnings = bet_amount * 10
-        elif symbols[0] == "monkey":
-            winnings = bet_amount * 10
-        elif symbols[0] == "pig":
-            winnings = bet_amount * 10
-        elif symbols[0] == "rabbit":
-            winnings = bet_amount * 10
-        elif symbols[0] == "rat":
-            winnings = bet_amount * 10
-        elif symbols[0] == "snake":
-            winnings = bet_amount * 10
-        elif symbols[0] == "tiger":
-            winnings = bet_amount * 10
-        elif symbols[0] == "horse":
-            winnings = bet_amount * 10
+        if symbols[0] in symbol_winnings:
+            winnings = bet_amount * symbol_winnings[symbols[0]]
 
     if winnings > 0:
         banker_balance -= winnings
         new_balance += winnings
-        session['balance'] = new_balance
-        cursor.execute('UPDATE user SET balance = %s WHERE username = "banker"', (banker_balance,))
-        mydb.commit()
-        cursor.execute('UPDATE user SET balance = %s WHERE username = %s', (new_balance, username))
-        mydb.commit()
-
-    cursor.execute(
-        'INSERT INTO slot_machine_history (username, bet_amount, winnings, symbols, spin_time) VALUES (%s, %s, %s, %s, %s)',
-        (username, bet_amount, winnings, ','.join(symbols), datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-    mydb.commit()
-    cursor.close()
+        info.update_balance('banker', banker_balance)
+        info.update_balance(username, new_balance)
+    info.insert_slotmachine(username, bet_amount, ','.join(symbols), winnings)
 
     return symbols, bet_amount, winnings, new_balance
 
-def topup_function(request, cursor, current_balance, username, background_image, is_admin=False):
+def topup_function(request, current_balance, username, is_admin=False):
     if is_admin:
         # Get the amount and helper username to top up from the form
         amount = int(request.form['amount'])
         helper_username = request.form['helper_username']
 
         # Get the helper's current balance
-        cursor.execute('SELECT balance FROM user WHERE username = %s', (helper_username,))
-        helper_balance = float(cursor.fetchone()[0])
+        helper_balance = info.get_balance(helper_username)
 
         # Top up the helper's balance
         new_helper_balance = helper_balance + amount
@@ -187,23 +157,10 @@ def topup_function(request, cursor, current_balance, username, background_image,
         bef_topup = helper_balance
         after_topup = new_helper_balance
         topup_amt = amount
-        topup_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        cursor.execute('INSERT INTO topup_history (username, bef_topup, after_topup, topup_amt, topup_time, user_topup) VALUES (%s, %s, %s, %s, %s, %s)',
-                       (helper_username, bef_topup, after_topup, topup_amt, topup_time, username))
-
-        # Select the topup id first since it is the trigger
-        cursor.execute('SELECT topup_id from topup_history WHERE username=%s AND topup_amt= %s AND topup_time= %s',
-                       (helper_username, topup_amt, topup_time,))
-        secondid = cursor.fetchone()[0]
-        cursor.execute('INSERT INTO transaction(transaction_id2,user,amt_bef_transaction,amt_aft_transaction,total_amt_transaction, transaction_comment)VALUES(%s,%s,%s,%s,%s,%s)',
-                       (secondid, helper_username, bef_topup, after_topup, topup_amt, 'admin page topup'))
+        info.insert_topup(helper_username, bef_topup, after_topup, topup_amt, username)
 
         # Everything is recorded already, then it will update the real balance, otherwise the record is just a record, not an actual balance effect
-        cursor.execute('UPDATE user SET balance = %s WHERE username = %s', (new_helper_balance, helper_username))
-
-        # Close the database connection
-        mydb.commit()
-        cursor.close()
+        info.update_balance(helper_username, new_helper_balance)
 
         # Redirect back to the lobby page with a success message
         flash(f'Successfully topped up ${amount} for {helper_username}', 'success')
@@ -219,31 +176,17 @@ def topup_function(request, cursor, current_balance, username, background_image,
 
         # Update the balance in the database
         new_balance = current_balance + amount
-        cursor.execute('UPDATE user SET balance = %s WHERE username = %s', (new_balance, username))
+        info.update_balance(username, new_balance)
 
         # Insert a new row into the topup_history table
         bef_topup = current_balance
         after_topup = current_balance + amount
         topup_amt = amount
-        topup_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        cursor.execute('INSERT INTO topup_history (username, bef_topup, after_topup, topup_amt, topup_time) VALUES (%s, %s, %s, %s, %s)',
-                       (username, bef_topup, after_topup, topup_amt, topup_time))
-
-        # Insert a new row into the transaction table
-        cursor.execute('SELECT topup_id from topup_history WHERE username=%s AND topup_amt= %s AND topup_time= %s',
-                       (username, topup_amt, topup_time,))
-        transaction_id2 = cursor.fetchone()[0]
-        transaction_comment = 'user topup'
-        cursor.execute('INSERT INTO transaction (transaction_id2, user, amt_bef_transaction, amt_aft_transaction, total_amt_transaction, transaction_comment) VALUES (%s, %s, %s, %s, %s, %s)',
-                       (transaction_id2, username, bef_topup, after_topup, topup_amt, transaction_comment))
+        info.insert_topup(username, bef_topup, after_topup, topup_amt, username)
 
         # After all the records have been inserted, the balance will be updated
         new_balance = current_balance + amount
-        cursor.execute('UPDATE user SET balance = %s WHERE username = %s', (new_balance, username))
-
-        # Close the database connection
-        mydb.commit()
-        cursor.close()
+        info.update_balance(username, new_balance)  
 
         # Redirect back to the lobby page with a success message
         flash(f'Successfully topped up ${amount}', 'success')
@@ -310,3 +253,70 @@ def calculate_hand_emoji(hand):
         total -= 10
         aces -= 1
     return total
+
+#this is the blackjack game that for one single player
+class BlackjackGame:
+    def __init__(self):
+        self.game_state = {
+            'dealer_hand': [],
+            'player_hand': [],
+            'dealer_score': 0,
+            'player_score': 0,
+            'outcome': "",
+            'game_started': False
+        }
+        self.deck = []
+
+    def reset_game_state(self):
+        self.deck = []
+        self.game_state = {
+            'dealer_hand': [],
+            'player_hand': [],
+            'dealer_score': 0,
+            'player_score': 0,
+            'outcome': "",
+            'game_started': False
+        }
+
+    def start_game(self):
+        self.reset_game_state()
+        self.deck = create_deck_emoji()
+        self.game_state['dealer_hand'] = [self.deck.pop(), self.deck.pop()]
+        self.game_state['player_hand'] = [self.deck.pop(), self.deck.pop()]
+        self.game_state['dealer_score'] = calculate_hand_emoji(self.game_state['dealer_hand'])
+        self.game_state['player_score'] = calculate_hand_emoji(self.game_state['player_hand'])
+        self.game_state['outcome'] = ""
+        self.game_state['game_started'] = True
+
+    def player_action(self, action):
+        if self.game_state['game_started']:
+            if action == 'hit':
+                self.game_state['player_hand'].append(self.deck.pop())
+                self.game_state['player_score'] = calculate_hand_emoji(self.game_state['player_hand'])
+                if self.game_state['player_score'] > 21:
+                    self.game_state['outcome'] = 'You have busted! You Lose!'
+                    self.game_state['game_started'] = False  # End the game
+
+            elif action == 'stand':
+                print('Player stands. Dealer is playing.')
+
+                # After player action, dealer will act
+                while self.game_state['dealer_score'] < 17:
+                    self.game_state['dealer_hand'].append(self.deck.pop())
+                    self.game_state['dealer_score'] = calculate_hand_emoji(self.game_state['dealer_hand'])
+
+                # Final calculate here
+                self.determine_outcome()
+                self.game_state['game_started'] = False  # End the game
+
+    def determine_outcome(self):
+        if self.game_state['player_score'] > 21:
+            self.game_state['outcome'] = 'Player Busts. Dealer Wins!'
+        elif self.game_state['dealer_score'] > 21 or self.game_state['dealer_score'] < self.game_state['player_score']:
+            self.game_state['outcome'] = 'Player Wins!'
+        elif self.game_state['dealer_score'] > self.game_state['player_score']:
+            self.game_state['outcome'] = 'Dealer Wins!'
+        elif self.game_state['dealer_score'] == self.game_state['player_score']:
+            self.game_state['outcome'] = 'It\'s a Tie!'
+        else:
+            self.game_state['outcome'] = 'Error, Please check with the Dealer!'

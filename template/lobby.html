@@ -7,7 +7,11 @@
     <link rel="stylesheet" type="text/css" href="static/lobby.css">
     
   </head>
-  <body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');">
+  
+  <style>
+    body { background-image: url('{{ url_for("static", filename="lobbybg/" + background_image) }}') }
+  </style>
+  <script src="javascript/general.js"></script>
     <header>
       <div class="header-container">
         <div class="logo-container">
@@ -52,33 +56,7 @@
         {% endif %}
 
 
-
         <button class="topup-btn" onclick="topup('{{ priv }}')">Top-Up</button>
     </main>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.1/socket.io.js"></script>
-    <script type="text/javascript">
-        var socket = io.connect('http://' + document.domain + ':' + location.port);
-
-        // Listen for balance updates
-        socket.on('balance_updated', function(data) {
-            // Update the displayed balance
-            document.getElementById('balance').innerText = data.balance;
-        });
-    </script>
-    <script>
-        function logout() {
-            window.location.replace('/logout');
-        }
-
-        function topup(priv) {
-            if (priv != 'admin' && priv != 'banker') {
-                if (confirm("Are you sure you want to top up your account?")) {
-                    window.location.replace('/topup');
-                }
-            } else {
-                window.location.replace('/topup');
-            }
-        }
-    </script>
 </body>
 </html>

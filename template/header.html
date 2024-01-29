@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Blackjack</title>
+    <title>Header Page</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <link rel="stylesheet" type="text/css" href="static/lobby.css">
+    <link rel="stylesheet" type="text/css" href="static/common.css">    
   </head>
-  <body style="background-image: url('{{ url_for('static', filename='lobbybg/' + background_image) }}');">     
+  <style>
+    body { background-image: url('{{ url_for("static", filename="lobbybg/" + background_image) }}') }
+  </style>
+  <body>
     <header>
       <div class="header-container">
         <div class="logo-container">
@@ -20,3 +23,8 @@
         </div>
       </div>
     </header>  
+  <script>
+    function logout() {
+      window.location.replace('/logout');
+    }
+  </script>

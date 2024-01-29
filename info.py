@@ -1,10 +1,7 @@
-import random
 import mysql.connector
-import string
 import datetime
-from flask import Flask,flash, render_template, request, redirect, url_for, session, jsonify, abort
 
-#this all the function that check the personal info and check the right password or not, function itself never return password but other can be return
+#this all the function that check the personal info and check the right password or not, function itself never return password but other can be return value
 
 mydb = mysql.connector.connect(
         host="localhost",
@@ -55,10 +52,8 @@ def check_password(username,password):
         cursor.execute('SELECT password FROM user WHERE username = %s', (username,))
         result = cursor.fetchone()
         passwordr = result[0] if result else None
-        if (passwordr==password):
-                return True
-        else:
-                return False
+        return (passwordr==password)
+
 
 
 def get_now():
@@ -77,4 +72,30 @@ def update_balance(username,new_balance):
         mydb.commit()
         cursor.close()
 
+
+#insert into the topup table record and transaction table record
+def insert_topup(helper_username, bef_topup, after_topup, topup_amt, username):
+        cursor = mydb.cursor()
+        time = get_now()
+        cursor.execute('INSERT INTO topup_history (username, bef_topup, after_topup, topup_amt, topup_time, user_topup) VALUES (%s, %s, %s, %s, %s, %s)',
+                       (helper_username, bef_topup, after_topup, topup_amt, time , username))
+        mydb.commit()
+        cursor.execute('SELECT topup_id from topup_history WHERE username=%s AND topup_amt= %s AND topup_time= %s',
+                (username, topup_amt, time,))
+        transaction_id2 = cursor.fetchone()[0]
+
+        topupcomment = "admin top up" if get_priv(username) == "admin" else "user top up"
+
+        cursor.execute('INSERT INTO transaction(transaction_id2,user,amt_bef_transaction,amt_aft_transaction,total_amt_transaction, transaction_comment)VALUES(%s,%s,%s,%s,%s,%s)',
+                (transaction_id2 ,helper_username, bef_topup, after_topup, topup_amt, topupcomment))
+        mydb.commit()
+        cursor.close()
+
+def insert_slotmachine(username, bet_amount, symbols, winnings):
+        cursor = mydb.cursor()
+        cursor.execute(
+        'INSERT INTO slot_machine_history (username, bet_amount, winnings, symbols, spin_time) VALUES (%s, %s, %s, %s, %s)',
+        (username, bet_amount, winnings, ','.join(symbols), get_now()))
+        mydb.commit()
+        cursor.close()
 

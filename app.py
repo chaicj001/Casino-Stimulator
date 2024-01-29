@@ -4,19 +4,20 @@ import datetime
 import random
 from flask_login import LoginManager, login_required, current_user
 import os
-from flask_socketio import SocketIO, emit
+
+#socketio library 
+from flask_socketio import SocketIO, emit, send, join_room, leave_room, close_room, rooms, disconnect
 from decimal import Decimal
 #personal info script (efficient than older one)
 import info,function
 
 
-
+'''
 #new import might be migrate to other python file in future, (currently testing,rollback will be require if testing fail)
-from flask_socketio import SocketIO
 from cachetools import TTLCache
 from flask import make_response
 
-
+'''
 
 app = Flask(__name__, template_folder='template')
 app.secret_key = 'mysecretkey'
@@ -108,7 +109,6 @@ def lobby():
     background_image=session.get('background_image')
     socketio.emit('user_join', {'username': username}, room=username)
     priv= info.get_priv(username)
-    balance= info.get_balance(username)
     # Determine whether to show the Win/Loss button based on user's privileges
     show_winloss = False
     if priv in ['banker', 'admin']:
@@ -122,17 +122,16 @@ def topup():
     from function import topup_function
     # Get the user's current balance and privileges
     username = session.get('username')
-    balance= info.get_balance(username)
     priv = info.get_priv(username)
     background_image = session.get('background_image')
 
     if request.method == 'POST':
         if priv == 'admin':
             # Call the topup_function from function.py
-            return topup_function(request, info.get_balance(username) , username, background_image, is_admin=True)
+            return topup_function(request, info.get_balance(username) , username, is_admin=True)
         else:
             # Call the topup_function from function.py
-            return topup_function(request, info.get_balance(username) , username, background_image, is_admin=False)
+            return topup_function(request, info.get_balance(username) , username, is_admin=False)
 
     else:
         # Render the appropriate topup page based on the user's privileges
@@ -158,76 +157,15 @@ def logout():
 def blackjack():
     username = session.get('username')
     current_balance = info.get_balance(username)
-    return render_template('blackjack.html', username=username,balance=current_balance)
+    return render_template('blackjack.html', username=username,balance=current_balance, background_image=session.get('background_image'))
     
-class BlackjackGame:
-    def __init__(self):
-        self.game_state = {
-            'dealer_hand': [],
-            'player_hand': [],
-            'dealer_score': 0,
-            'player_score': 0,
-            'outcome': "",
-            'game_started': False
-        }
-        self.deck = []
 
-    def reset_game_state(self):
-        self.deck = []
-        self.game_state = {
-            'dealer_hand': [],
-            'player_hand': [],
-            'dealer_score': 0,
-            'player_score': 0,
-            'outcome': "",
-            'game_started': False
-        }
-
-    def start_game(self):
-        self.reset_game_state()
-        self.deck = function.create_deck_emoji()
-        self.game_state['dealer_hand'] = [self.deck.pop(), self.deck.pop()]
-        self.game_state['player_hand'] = [self.deck.pop(), self.deck.pop()]
-        self.game_state['dealer_score'] = function.calculate_hand_emoji(self.game_state['dealer_hand'])
-        self.game_state['player_score'] = function.calculate_hand_emoji(self.game_state['player_hand'])
-        self.game_state['outcome'] = ""
-        self.game_state['game_started'] = True
-
-    def player_action(self, action):
-        if self.game_state['game_started']:
-            if action == 'hit':
-                self.game_state['player_hand'].append(self.deck.pop())
-                self.game_state['player_score'] = function.calculate_hand_emoji(self.game_state['player_hand'])
-                if self.game_state['player_score'] > 21:
-                    self.game_state['outcome'] = 'You have busted! You Lose!'
-                    self.game_state['game_started'] = False  # End the game
-
-            elif action == 'stand':
-                print('Player stands. Dealer is playing.')
-
-                # After player action, dealer will act
-                while self.game_state['dealer_score'] < 17:
-                    self.game_state['dealer_hand'].append(self.deck.pop())
-                    self.game_state['dealer_score'] = function.calculate_hand_emoji(self.game_state['dealer_hand'])
-
-                # Final calculate here
-                self.determine_outcome()
-                self.game_state['game_started'] = False  # End the game
-
-    def determine_outcome(self):
-        if self.game_state['player_score'] > 21:
-            self.game_state['outcome'] = 'Player Busts. Dealer Wins!'
-        elif self.game_state['dealer_score'] > 21 or self.game_state['dealer_score'] < self.game_state['player_score']:
-            self.game_state['outcome'] = 'Player Wins!'
-        elif self.game_state['dealer_score'] > self.game_state['player_score']:
-            self.game_state['outcome'] = 'Dealer Wins!'
-        elif self.game_state['dealer_score'] == self.game_state['player_score']:
-            self.game_state['outcome'] = 'It\'s a Tie!'
-        else:
-            self.game_state['outcome'] = 'Error, Please check with the Dealer!'
 
 # Create an instance of the BlackjackGame class
+from function import BlackjackGame
+
 blackjack_game = BlackjackGame()
+
 
 @app.route('/start_blackjack')
 def start_blackjack():
@@ -326,14 +264,13 @@ def slotmachine():
     # Check if the user exists
 
     current_balance = info.get_balance(username)
-    priv = info.get_priv(username)
-    if current_balance is None or priv is None:
+    if current_balance is None:
         flash('User not found!', 'danger')
         return redirect(url_for('login'))
     # Initialize symbols to an empty list
     symbols = []
     # Render the slot machine template with the appropriate parameters
-    return render_template('slotmachine.html', username=username, balance=info.get_balance(username) , symbols=symbols, priv=priv)
+    return render_template('slotmachine.html', username=username, balance=info.get_balance(username) , symbols=symbols, background_image=session.get('background_image'))
 
 @app.route('/spin', methods=['POST'])
 def spin():
@@ -351,7 +288,7 @@ def spin():
 @app.errorhandler(405)
 @app.errorhandler(404)
 def error_handler(error):
-    import function
+    
     random_image = function.errorleh()
     if 'username' in session:
         return render_template('404.html', random_image=random_image, home_url=url_for('lobby'))
@@ -361,7 +298,7 @@ def error_handler(error):
 
 @app.route('/referal', methods=['GET', 'POST'])
 def referal():
-    import function
+    
     username = session.get('username')
     if 'username' not in session:
         return redirect(url_for('index'))  # Redirect to login page or display an error message
@@ -386,7 +323,7 @@ def referal():
 
 @app.route('/viewref')
 def view_referrals():
-    import function
+    
     referrals = function.get_referrals()
     return render_template('viewref.html', referrals=referrals, background_image=session.get('background_image'),balance=info.get_balance(session.get('username')))
 
@@ -396,7 +333,7 @@ def referalcollect():
 
 @app.route('/referalcollectsubmit', methods=['GET', 'POST'])
 def refsubmit():
-    import function
+    
     if request.method == 'POST':
         referral_code = request.form['referralCode']
         username = session.get('username')
@@ -411,14 +348,12 @@ def refsubmit():
 
 @app.route('/delete_referral/<referral_id>', methods=['POST'])
 def delete_referral(referral_id):
-    import function
     function.delete_referral(referral_id)
     flash('Referral deleted successfully', 'success')
     return redirect(url_for('view_referrals'))
 
 @app.route('/delete_all_referrals', methods=['POST'])
 def delete_all_referrals():
-    import function
     function.delete_all_referrals()
     flash('All referrals deleted successfully', 'success')
     return redirect(url_for('view_referrals'))
@@ -426,9 +361,6 @@ def delete_all_referrals():
 @app.route('/game4d')
 def game4d():
     username = session.get('username')
-    cursor = mydb.cursor()
-    cursor.execute('SELECT balance FROM user WHERE username = %s', (username,))
-    balance = float(cursor.fetchone()[0])
     return render_template('game4d.html',background_image=session.get('background_image'), balance=info.get_balance(username))
 
 
@@ -455,9 +387,7 @@ def submit_4d():
 @app.route('/admintoto')
 def admintoto():
     username = session.get('username')
-    cursor = mydb.cursor()
-    cursor.execute('SELECT balance FROM user WHERE username = %s', (username,))
-    balance = float(cursor.fetchone()[0])
+    balace = info.get_balance(username)
     return render_template('admintoto.html',background_image=session.get('background_image'), balance=info.get_balance(username))
 
 #toto game (update require)
@@ -476,8 +406,6 @@ def admin4dtotosubmit():
     mydb.commit()
     cursor.close()
     return redirect(url_for('lobby'))
-
-
 
 
 if __name__ == '__main__':
